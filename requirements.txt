@@ -1,0 +1,29 @@
+# Python >= 3.9（main.py 用了 argparse.BooleanOptionalAction）
+# 安装：pip install -r requirements.txt
+
+pygame>=2.5.0
+
+
+# ─────────────────────────────────────────────────────────────
+# 以下都不是 pip 包，装不进来，只是运行前需要满足的外部条件。
+# 代码里对话与嵌入都走 HTTP，只依赖标准库 urllib，没有 ollama SDK 依赖。
+# ─────────────────────────────────────────────────────────────
+#
+# ollama（服务端，不是 Python 包）
+#
+#   >= 0.7.0  /api/chat 接受 think 字段，可关闭 qwen3 的思考段。推荐。
+#   >= 0.5.0  format 接受 JSON schema，结构化输出（决策与记忆抽取都依赖）。
+#   >= 0.3.0  /api/embed 支持批量向量。
+#
+#   0.6.x 及更早会忽略 think 字段：qwen3 仍先输出思考段，占满 num_predict，
+#   决策 JSON 被截断，表现为反复 decide_failed。在 0.6.1 上请改用非推理
+#   模型（如 qwen2.5:7b），或升级 ollama。
+#
+# 模型
+#
+#   ollama pull qwen3.8:27b-mtp-q4_K_M   # main.py 默认对话模型，可用 --model 换
+#   ollama pull qwen3-embedding:0.6b     # 向量检索，--no-embedding 可跳过
+#
+# 中文字体（非 pip）
+#
+#   Windows 自带微软雅黑；Linux 需 Noto Sans CJK。都找不到时按系统字体回退。

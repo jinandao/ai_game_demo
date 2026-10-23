@@ -1,0 +1,971 @@
+[
+  {
+    "id": "m_622f34dfc9",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792406468873,
+      1792406468873
+    ],
+    "ts": "2026-10-19T18:41:08.873198",
+    "subject": "event",
+    "key": "决策_idle",
+    "value": "idle（parse_failed）",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_5e384e8bf9",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792642525286,
+      1792642525286
+    ],
+    "ts": "2026-10-22T12:15:25.286633",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_e5d40e0a87",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792642525288,
+      1792642525288
+    ],
+    "ts": "2026-10-22T12:15:25.288632",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_84a5a5d837",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792642545018,
+      1792642545018
+    ],
+    "ts": "2026-10-22T12:15:45.018919",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_f15197bb0a",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792642545020,
+      1792642545020
+    ],
+    "ts": "2026-10-22T12:15:45.020456",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_ca5ee027a2",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792647776859,
+      1792647776859
+    ],
+    "ts": "2026-10-22T13:42:56.859035",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_5000c4c81e",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792647776860,
+      1792647776860
+    ],
+    "ts": "2026-10-22T13:42:56.860061",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_d80823e205",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792647796809,
+      1792647796809
+    ],
+    "ts": "2026-10-22T13:43:16.809975",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_8e7a82d876",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792648366019,
+      1792648366019
+    ],
+    "ts": "2026-10-22T13:52:46.019926",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_b0d557aac7",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792648366021,
+      1792648366021
+    ],
+    "ts": "2026-10-22T13:52:46.021927",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_ea9933486f",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792661834163,
+      1792661834163
+    ],
+    "ts": "2026-10-22T17:37:14.163729",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_6871ecb6af",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792661834164,
+      1792661834164
+    ],
+    "ts": "2026-10-22T17:37:14.164876",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_efdf942634",
+    "session_id": "s_f1d734b7",
+    "npc_id": "B",
+    "turn_range": [
+      0,
+      1
+    ],
+    "ts": "2026-10-22T17:38:12.514867",
+    "subject": "player",
+    "key": "妹妹信息",
+    "value": "玩家妹妹叫小雨",
+    "importance": 3,
+    "evidence": "我有个妹妹叫小雨",
+    "source": "dialogue",
+    "promise": false,
+    "dedupe": true,
+    "supersedes": null
+  },
+  {
+    "id": "m_dd20f47493",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792661893665,
+      1792661893665
+    ],
+    "ts": "2026-10-22T17:38:13.665690",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_c8a26df5c6",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792661893667,
+      1792661893667
+    ],
+    "ts": "2026-10-22T17:38:13.667691",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_52df40f7e6",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792661897217,
+      1792661897217
+    ],
+    "ts": "2026-10-22T17:38:17.217812",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_2678701ce6",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792661897219,
+      1792661897219
+    ],
+    "ts": "2026-10-22T17:38:17.219872",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_9f5950f626",
+    "session_id": "s_09c200ae",
+    "npc_id": "B",
+    "turn_range": [
+      0,
+      1
+    ],
+    "ts": "2026-10-22T17:39:13.598581",
+    "subject": "player",
+    "key": "妹妹信息",
+    "value": "玩家妹妹叫小雨",
+    "importance": 3,
+    "evidence": "你还记得小雨吗？",
+    "source": "dialogue",
+    "promise": false,
+    "dedupe": true,
+    "supersedes": null
+  },
+  {
+    "id": "m_11e7469062",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792661954737,
+      1792661954737
+    ],
+    "ts": "2026-10-22T17:39:14.737978",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_7c31281de6",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792661954739,
+      1792661954739
+    ],
+    "ts": "2026-10-22T17:39:14.739979",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_53af2cf361",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792661958254,
+      1792661958254
+    ],
+    "ts": "2026-10-22T17:39:18.254231",
+    "subject": "event",
+    "key": "决策_idle",
+    "value": "idle",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_3af181f1e2",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792661958255,
+      1792661958255
+    ],
+    "ts": "2026-10-22T17:39:18.255854",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_c8598b6753",
+    "session_id": "s_1504dcb3",
+    "npc_id": "A",
+    "turn_range": [
+      0,
+      3
+    ],
+    "ts": "2026-10-22T17:41:09.461408",
+    "subject": "player",
+    "key": "设备状况",
+    "value": "玩家手边的终端最近有点卡",
+    "importance": 2,
+    "evidence": "是有点卡。",
+    "source": "dialogue",
+    "promise": false,
+    "dedupe": true,
+    "supersedes": null
+  },
+  {
+    "id": "m_a3b444ee58",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792662070601,
+      1792662070601
+    ],
+    "ts": "2026-10-22T17:41:10.601018",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_d6cc7d9c13",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792662070602,
+      1792662070602
+    ],
+    "ts": "2026-10-22T17:41:10.602017",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_e3abb92ca3",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792664391577,
+      1792664391577
+    ],
+    "ts": "2026-10-22T18:19:51.577628",
+    "subject": "event",
+    "key": "决策_idle",
+    "value": "idle",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_ee0c42b95b",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792664391579,
+      1792664391579
+    ],
+    "ts": "2026-10-22T18:19:51.579682",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_1c690d06b8",
+    "session_id": "s_7202c32e",
+    "npc_id": "B",
+    "turn_range": [
+      0,
+      27
+    ],
+    "ts": "2026-10-22T18:33:32.368830",
+    "subject": "event",
+    "key": "修理关节",
+    "value": "NPC正在拆解一个老化且卡住三天的关节",
+    "importance": 3,
+    "evidence": "我在拆那个老化的关节，卡了三天了……",
+    "source": "dialogue",
+    "promise": false,
+    "dedupe": true,
+    "supersedes": null
+  },
+  {
+    "id": "m_f98ea07256",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792763030125,
+      1792763030125
+    ],
+    "ts": "2026-10-23T21:43:50.125122",
+    "subject": "event",
+    "key": "决策_idle",
+    "value": "idle",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_a9e8c34786",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792763030126,
+      1792763030126
+    ],
+    "ts": "2026-10-23T21:43:50.126123",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_a8701502e2",
+    "session_id": "s_6328a1ee",
+    "npc_id": "B",
+    "turn_range": [
+      0,
+      11
+    ],
+    "ts": "2026-10-23T21:48:22.161075",
+    "subject": "other",
+    "key": "神经接口",
+    "value": "神经接口位于后颈，目前不常用",
+    "importance": 3,
+    "evidence": "嗯，就是后颈那个接口呢。现在不常用了。",
+    "source": "dialogue",
+    "promise": false,
+    "dedupe": true,
+    "supersedes": null
+  },
+  {
+    "id": "m_b719733c9c",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792763303334,
+      1792763303334
+    ],
+    "ts": "2026-10-23T21:48:23.334350",
+    "subject": "event",
+    "key": "决策_rest",
+    "value": "rest",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_cd589db50b",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792763303335,
+      1792763303335
+    ],
+    "ts": "2026-10-23T21:48:23.335368",
+    "subject": "event",
+    "key": "决策_idle",
+    "value": "idle",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_8be0036bac",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792763306827,
+      1792763306827
+    ],
+    "ts": "2026-10-23T21:48:26.827573",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_585329ddb6",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792763306829,
+      1792763306829
+    ],
+    "ts": "2026-10-23T21:48:26.829575",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_dbd37987d4",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792763326894,
+      1792763326894
+    ],
+    "ts": "2026-10-23T21:48:46.894052",
+    "subject": "event",
+    "key": "决策_rest",
+    "value": "rest",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_fac8ffc897",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792763326895,
+      1792763326895
+    ],
+    "ts": "2026-10-23T21:48:46.895081",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_c09a722be8",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792763346880,
+      1792763346880
+    ],
+    "ts": "2026-10-23T21:49:06.880064",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_088a1139cb",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792763346882,
+      1792763346882
+    ],
+    "ts": "2026-10-23T21:49:06.882062",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_d33ee84540",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792763366621,
+      1792763366621
+    ],
+    "ts": "2026-10-23T21:49:26.621054",
+    "subject": "event",
+    "key": "决策_rest",
+    "value": "rest",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_ea29714df7",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792763366622,
+      1792763366622
+    ],
+    "ts": "2026-10-23T21:49:26.622054",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_eb6a268ec6",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792763386603,
+      1792763386603
+    ],
+    "ts": "2026-10-23T21:49:46.603278",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_dddf4dd5de",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792763386604,
+      1792763386604
+    ],
+    "ts": "2026-10-23T21:49:46.604869",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_3ee8dba230",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792763406899,
+      1792763406899
+    ],
+    "ts": "2026-10-23T21:50:06.899404",
+    "subject": "event",
+    "key": "决策_rest",
+    "value": "rest",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_1367c5c815",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792763406900,
+      1792763406900
+    ],
+    "ts": "2026-10-23T21:50:06.900431",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_37a5f5b3d4",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792763426970,
+      1792763426970
+    ],
+    "ts": "2026-10-23T21:50:26.970847",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_1df8e387f5",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792763426972,
+      1792763426972
+    ],
+    "ts": "2026-10-23T21:50:26.972847",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_6951dc2282",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792763446624,
+      1792763446624
+    ],
+    "ts": "2026-10-23T21:50:46.624785",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_cda3d15d75",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792763446625,
+      1792763446625
+    ],
+    "ts": "2026-10-23T21:50:46.625786",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_283cce6914",
+    "session_id": "decision:A",
+    "npc_id": "A",
+    "turn_range": [
+      1792763466859,
+      1792763466859
+    ],
+    "ts": "2026-10-23T21:51:06.859577",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  },
+  {
+    "id": "m_61e45312ac",
+    "session_id": "decision:B",
+    "npc_id": "B",
+    "turn_range": [
+      1792763466861,
+      1792763466861
+    ],
+    "ts": "2026-10-23T21:51:06.861122",
+    "subject": "event",
+    "key": "决策_work",
+    "value": "work",
+    "importance": 1,
+    "evidence": "",
+    "source": "decision",
+    "promise": false,
+    "dedupe": false,
+    "supersedes": null
+  }
+]

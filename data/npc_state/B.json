@@ -1,0 +1,13 @@
+{
+  "npc_id": "B",
+  "stamina": 1.0,
+  "mood": 0.5,
+  "last_decision_at": "2026-10-23T21:51:06.860095",
+  "last_decision": {
+    "intent": "work",
+    "reason": "",
+    "urgency": 0.5,
+    "about_memory": null
+  },
+  "cooldowns": {}
+}

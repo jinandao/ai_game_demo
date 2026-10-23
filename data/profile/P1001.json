@@ -1,0 +1,20 @@
+{
+  "player_id": "P1001",
+  "name": "玩家",
+  "affection": {
+    "A": {
+      "affinity": 10,
+      "stage": "stranger",
+      "daily_gain": 1,
+      "last_gain": null
+    },
+    "B": {
+      "affinity": 42,
+      "stage": "stranger",
+      "daily_gain": 2,
+      "last_gain": null
+    }
+  },
+  "flags": {},
+  "last_session_at": "2026-10-23T21:48:22.161075"
+}
