@@ -1,14 +1,10 @@
-"""记忆域：记忆检索。嵌入不可用时退回关键词。
-
-阈值按嵌入模型标定；低于 sim_floor 的条目直接丢弃。
-"""
+"""记忆检索。"""
 
 from __future__ import annotations
 
-import math
 import re
-from datetime import datetime
 
+from ..domain.enums import MemoryTier
 from ..domain.models import Hit, MemoryItem
 from ..infra.clock import Clock
 from ..infra.config import Config
@@ -17,17 +13,14 @@ from .store import MemoryStore
 
 _CJK = re.compile(r"[\u4e00-\u9fff]|[a-zA-Z0-9]+")
 
-# 仅在关键词兜底路径下使用。
-_SYNONYMS: dict[str, set[str]] = {
-    "睡不着": {"失眠", "睡眠"},
-    "失眠": {"睡不着", "睡眠"},
-    "茶": {"喝茶", "安神"},
-    "外面": {"站外", "出闸", "废墟", "城里"},
-    "残响": {"听见", "耳机", "深区"},
-}
-
 EMBED_CHARS = 400
 
+# 决策层写进深刻记忆的「互动」条目是步骤流水
+_STEP_LOG_PREFIX = "我为玩家做过："
+
+def is_step_log(value: str) -> bool:
+    text = (value or "").strip()
+    return text.startswith(_STEP_LOG_PREFIX) or " → " in text
 
 class MemoryRetriever:
     def __init__(
@@ -47,10 +40,21 @@ class MemoryRetriever:
     # ── 主入口 ──
 
     def retrieve(
-        self, query: str, *, player_id: str = "", npc_id: str, k: int | None = None
+        self,
+        query: str,
+        *,
+        player_id: str = "",
+        npc_id: str,
+        k: int | None = None,
+        # 默认只查这两档：玩家画像 + 深刻记忆。
+        tiers: tuple[MemoryTier, ...] = (MemoryTier.INTERACTION, MemoryTier.DEEP),
     ) -> list[Hit]:
+        """语义检索：每条记忆各自和问题算余弦，排序取前 k。"""
         k = k or self._cfg.memory_top_k
         items = self._store.items(npc_id)
+        if tiers is not None:
+            wanted = set(tiers)
+            items = [m for m in items if m.tier in wanted]
         if not items:
             return []
 
@@ -64,9 +68,25 @@ class MemoryRetriever:
         items = self._store.promises(npc_id)
         return sorted(items, key=lambda m: m.importance, reverse=True)[:k]
 
+    def events(self, npc_id: str, k: int = 5) -> list[MemoryItem]:
+        """最近的动作流水：她刚才去做了什么。"""
+        return self._store.by_tier(npc_id, MemoryTier.EVENT, k)
+
+    def deep(self, npc_id: str, k: int = 5) -> list[MemoryItem]:
+        """深刻记忆：剧情里发生过的 + 她为他做过的事。"""
+        return self._store.by_tier(npc_id, MemoryTier.DEEP, k)
+
+    def interactions(self, npc_id: str, k: int = 5) -> list[MemoryItem]:
+        """对话里提取的、关于玩家的事（不删的那一档）。"""
+        return self._store.by_tier(npc_id, MemoryTier.INTERACTION, k)
+
     def recent(self, npc_id: str, k: int = 6) -> list[MemoryItem]:
         """最近做过的事。决策层拿它来避免"做完又做一遍"。"""
         return self._store.recent(npc_id, k)
+
+    def forget(self) -> None:
+        """丢掉向量缓存。"""
+        self._vec.clear()
 
     # ── 向量路径 ──
 
@@ -84,8 +104,7 @@ class MemoryRetriever:
             self._degraded = True
             return None
 
-        now = self._clock.now()
-        scored: list[tuple[float, float, MemoryItem]] = []
+        scored: list[tuple[float, MemoryItem]] = []
         for item in items:
             vec = self._vec.get(item.id)
             if vec is None:
@@ -93,15 +112,13 @@ class MemoryRetriever:
             sim = cosine(qvec, vec)
             if sim < self._cfg.sim_floor:
                 continue        # 不够像，就当没想起来
-            # 语义为主；重要性和新近度只做微调，避免旧的约定永远压过新话题
-            bonus = 0.06 * (item.importance / 5.0) + 0.04 * self._recency(item, now)
-            scored.append((sim + bonus, sim, item))
+            scored.append((sim, item))
 
         scored.sort(key=lambda x: x[0], reverse=True)
         return [
             Hit(
                 text=f"{m.key}：{m.value}",
-                score=round(total, 4),
+                score=round(sim, 4),
                 source=f"memory:{m.id}",
                 meta={
                     "importance": m.importance,
@@ -111,7 +128,7 @@ class MemoryRetriever:
                     "sim": round(sim, 4),
                 },
             )
-            for total, sim, m in scored[:k]
+            for sim, m in scored[:k]
         ]
 
     def _ensure_vectors(self, items: list[MemoryItem]) -> None:
@@ -130,8 +147,7 @@ class MemoryRetriever:
         terms = _terms(query)
         if not terms:
             return []
-        now = self._clock.now()
-        scored = [(self._score(m, terms, now), m) for m in items]
+        scored = [(_match(m, terms), m) for m in items]
         scored = [(s, m) for s, m in scored if s > 0]
         scored.sort(key=lambda x: x[0], reverse=True)
         return [
@@ -150,17 +166,6 @@ class MemoryRetriever:
             for s, m in scored[:k]
         ]
 
-    def _score(self, item: MemoryItem, terms: set[str], now: datetime) -> float:
-        match = _match(item, terms)
-        if match <= 0:
-            return 0.0
-        boost = 1.25 if item.promise else 1.0
-        return (item.importance / 5.0) * self._recency(item, now) * match * boost
-
-    def _recency(self, item: MemoryItem, now: datetime) -> float:
-        days = max(0.0, (now - item.ts).total_seconds() / 86400)
-        return math.exp(-days / self._cfg.recency_half_life_days)
-
     # ── 调试 ──
 
     def stats(self) -> dict[str, object]:
@@ -170,18 +175,12 @@ class MemoryRetriever:
             "cached": len(self._vec),
         }
 
-
 def _terms(text: str) -> set[str]:
-    raw = set(_CJK.findall(text))
-    out = {t for t in raw if len(t) > 1 or "\u4e00" <= t <= "\u9fff"}
-    for t in list(out):
-        out |= _SYNONYMS.get(t, set())
-    return out
-
+    """切词：中文按单字，英文数字按整段。只保留有信息量的（去掉单字母）。"""
+    return {t for t in set(_CJK.findall(text)) if len(t) > 1 or "\u4e00" <= t <= "\u9fff"}
 
 def _match(item: MemoryItem, terms: set[str]) -> float:
-    haystack = f"{item.key}{item.value}"
-    if not terms:
-        return 0.0
+    """命中率 = 问题里的词有多少出现在这条记忆里。0~1，不掺任何权重。"""
+    haystack = f"{item.key} {item.value}"
     hits = sum(1 for t in terms if t and t in haystack)
-    return min(1.0, hits / max(1, len(terms)) + (0.3 if item.key in haystack else 0))
+    return hits / max(1, len(terms))

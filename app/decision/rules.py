@@ -1,4 +1,4 @@
-"""决策域：规则剪枝，模型只看到当前合法的意图。"""
+"""规则剪枝，收窄可选目标。"""
 
 from __future__ import annotations
 
@@ -15,8 +15,7 @@ NEEDS_STAGE: dict[DecisionIntent, Stage] = {
 
 _ORDER = [Stage.STRANGER, Stage.ACQUAINTANCE, Stage.CLOSE, Stage.AMBIGUOUS, Stage.DEPENDENT]
 
-# 这些是"日常状态"，不是"事件"。它们本来就该反复出现，
-# 参与冷却等于把 NPC 的选择剪到只剩两个来回切——看起来就是"一直走来走去"。
+# 这些是"日常状态"，不是"事件"。它们本来就该反复出现
 COOLDOWN_EXEMPT = {
     DecisionIntent.IDLE,
     DecisionIntent.WORK,
@@ -24,7 +23,6 @@ COOLDOWN_EXEMPT = {
     DecisionIntent.REST,
     DecisionIntent.WITHDRAW,
 }
-
 
 class RuleEngine:
     def __init__(self, affection: AffectionEngine, cooldown_minutes: int = 5) -> None:
@@ -45,8 +43,6 @@ class RuleEngine:
                 allowed.add(intent)
 
         # 冷却只约束"会打扰玩家的一次性动作"（找人、提约定、邀请）。
-        # 日常状态不进冷却，否则每 20 秒决策一次、却 30 分钟不许重复，
-        # 可用意图会被剪到只剩两三个，行为立刻变得单调。
         last = state.last_decision
         if last and last.intent not in COOLDOWN_EXEMPT and state.last_decision_at:
             gap = (now - state.last_decision_at).total_seconds() / 60

@@ -1,8 +1,9 @@
-"""行为域：行为树、行为库与场景。"""
+"""行为域。"""
 
 from .behavior import Behavior, EmptyBehavior
 from .context import Agent, BehaviorContext, SpeakRequest, WorldEvent
 from .director import BehaviorDirector
+from .executor import ActionExecutor, Plan
 from .library import (
     AppreciateScenery,
     Idle,
@@ -20,6 +21,7 @@ from .system import BehaviorSystem
 from .world import PLAYER, Place, World, base_world
 
 __all__ = [
+    "ActionExecutor",
     "Agent",
     "AppreciateScenery",
     "Behavior",
@@ -38,6 +40,7 @@ __all__ = [
     "PLAYER",
     "Parallel",
     "Place",
+    "Plan",
     "Repeat",
     "Rest",
     "Say",

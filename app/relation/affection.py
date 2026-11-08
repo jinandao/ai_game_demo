@@ -1,4 +1,4 @@
-"""关系域：好感度状态机，唯一修改 affinity 与 stage 的地方。"""
+"""好感度状态机。"""
 
 from __future__ import annotations
 
@@ -17,7 +17,6 @@ STAGE_TABLE: list[tuple[int, Stage]] = [
     (10, Stage.ACQUAINTANCE),
     (0, Stage.STRANGER),
 ]
-
 
 class AffectionEngine:
     def __init__(self, cfg: Config, clock: Clock) -> None:

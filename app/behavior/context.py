@@ -1,4 +1,4 @@
-"""行为域：运行时上下文（Agent、事件、说话请求）。"""
+"""行为树运行时上下文。"""
 
 from __future__ import annotations
 
@@ -8,6 +8,8 @@ from typing import Any, Callable
 
 from .world import World
 
+# 上层（玩法结算）把"这件事成没成"写回黑板的键。
+ACTION_RESULT = "action_result"
 
 @dataclass
 class Agent:
@@ -28,16 +30,14 @@ class Agent:
     def pos(self) -> tuple[float, float]:
         return self.x, self.y
 
-
 @dataclass(frozen=True)
 class SpeakRequest:
-    """让 NPC 说一句话的请求。只有 topic / action，没有台词正文。"""
+    """让 NPC 说一句话的请求。"""
 
     npc_id: str
     topic: str                          # greet | invite | share_memory | observe
     about: str | None = None            # 指向哪条记忆
     action: str | None = None           # invite 专用：invite_walk / request_hug ...
-
 
 @dataclass(frozen=True)
 class WorldEvent:
@@ -47,11 +47,9 @@ class WorldEvent:
     npc_id: str
     payload: dict[str, Any] = field(default_factory=dict)
 
-
 # 说话能力的注入点。默认实现接 DialoguePipeline，测试时换成 lambda。
 SpeechProvider = Callable[[SpeakRequest], str]
 EventSink = Callable[[WorldEvent], None]
-
 
 @dataclass
 class BehaviorContext:
@@ -60,6 +58,8 @@ class BehaviorContext:
     player_place: str
     dt: float
     now: datetime
+    # 玩家的世界坐标。走位要用它——「走到他身边」不能变成「走到场景入口」。
+    player_xy: tuple[float, float] = (0.0, 0.0)
     speech: SpeechProvider | None = None
     emit: EventSink | None = None
 
@@ -81,6 +81,7 @@ class BehaviorContext:
             player_place=self.player_place,
             dt=dt,
             now=self.now,
+            player_xy=self.player_xy,
             speech=self.speech,
             emit=self.emit,
         )

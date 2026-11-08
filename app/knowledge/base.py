@@ -1,8 +1,4 @@
-"""知识域：世界观库的抽象与向量实现。
-
-权限过滤在打分之前完成：私密块只有主人能检索到。
-两个实现：KeywordKB 作为兜底，VectorKB 为主路径，嵌入不可用时退回前者。
-"""
+"""世界观库抽象与向量实现。"""
 
 from __future__ import annotations
 
@@ -13,7 +9,6 @@ from ..domain.enums import Scope
 from ..domain.models import Hit
 from ..infra.embedding import Embedder, EmbedError, cosine
 
-
 @dataclass(frozen=True)
 class Chunk:
     id: str
@@ -23,7 +18,6 @@ class Chunk:
     visibility: str = "public"        # public | private
     tags: tuple[str, ...] = field(default_factory=tuple)
 
-
 def is_visible(chunk: Chunk, npc_id: str | None) -> bool:
     """私密块只有主人能检索到。任何检索实现都必须先过这一关。"""
     if chunk.scope is not Scope.CHARACTER:
@@ -32,16 +26,14 @@ def is_visible(chunk: Chunk, npc_id: str | None) -> bool:
         return chunk.owner == npc_id
     return True
 
-
 class KnowledgeBase(ABC):
     @abstractmethod
     def retrieve(
         self, query: str, *, scope: Scope, npc_id: str | None = None, k: int = 3
     ) -> list[Hit]: ...
 
-
 class VectorKB(KnowledgeBase):
-    """嵌入检索。sim_floor 需按模型标定；嵌入失败后退回 fallback，且不再重试。"""
+    """嵌入检索。"""
 
     EMBED_CHARS = 800                 # 太长的块截断，嵌入模型对长度敏感
 

@@ -1,4 +1,4 @@
-"""提示词：人设块，把五段结构渲染成文本。"""
+"""提示词：人设块。"""
 
 from __future__ import annotations
 
@@ -15,9 +15,8 @@ STAGE_LABEL = {
 
 INTIMATE_STAGES = {Stage.CLOSE, Stage.AMBIGUOUS, Stage.DEPENDENT}
 
-
 def intimacy_block(stage: Stage) -> str:
-    """按关系渲染口吻：不熟时客气，熟悉后才出现别扭。"""
+    """关系决定口吻。"""
     if stage in (Stage.STRANGER, Stage.ACQUAINTANCE):
         return (
             "【你现在该怎么说话】\n"
@@ -47,9 +46,10 @@ def intimacy_block(stage: Stage) -> str:
         "他正常说话的时候，你还是正常回。"
     )
 
-
-def persona_block(p: Persona, stage: Stage = Stage.STRANGER) -> str:
-    """渲染五段人设：身份、职责、口吻、冲突、示范。示范按关系分两套。"""
+def persona_block(
+    p: Persona, stage: Stage = Stage.STRANGER, *, lean: bool = False
+) -> str:
+    """渲染人设。"""
     lines: list[str] = []
 
     lines.append("【你是谁】")
@@ -89,7 +89,7 @@ def persona_block(p: Persona, stage: Stage = Stage.STRANGER) -> str:
         lines.append("【你怎么说话】")
         lines.extend(voice)
 
-    if p.charm:
+    if p.charm and not lean:
         lines.append("")
         lines.append("【让人记住你的地方】")
         lines.append("下面这些是别人跟你相处久了才会发现的，不是你的自我介绍。")
@@ -98,7 +98,7 @@ def persona_block(p: Persona, stage: Stage = Stage.STRANGER) -> str:
         for item in p.charm:
             lines.append(f"- {item}")
 
-    if p.conflicts:
+    if p.conflicts and not lean:
         lines.append("")
         lines.append("【你容易在哪儿出错 —— 每条都给好了线】")
         for c in p.conflicts:
@@ -113,9 +113,13 @@ def persona_block(p: Persona, stage: Stage = Stage.STRANGER) -> str:
 
     # 示范按关系选：不熟用客气那套，熟了才用别扭那套
     shots = (
-        p.few_shots_intimate
-        if stage in INTIMATE_STAGES and p.few_shots_intimate
-        else p.few_shots
+        ()
+        if lean
+        else (
+            p.few_shots_intimate
+            if stage in INTIMATE_STAGES and p.few_shots_intimate
+            else p.few_shots
+        )
     )
     if shots:
         lines.append("")
@@ -126,9 +130,8 @@ def persona_block(p: Persona, stage: Stage = Stage.STRANGER) -> str:
 
     return "\n".join(lines)
 
-
 def player_block(stage_label: str) -> str:
-    """交代玩家身份与当前关系，避免模型把玩家当成刚来的人。"""
+    """交代"对面是谁"。"""
     return (
         "【对面是谁】\n"
         f"对方和你一样住在这个站里，你们的关系是「{stage_label}」。\n"
@@ -137,15 +140,41 @@ def player_block(stage_label: str) -> str:
         "你们之间的差别只是熟不熟，不是认不认识。"
     )
 
+def optional_topic_block(items: list[tuple[str, str]] | None) -> str:
+    """闲聊时的"手边几件旧事"：可以提，也可以完全不提。"""
+    if not items:
+        return ""
+    lines = ["【你记着的几件旧事 · 多数时候不用提】"]
+    for label, text in items:
+        # 标签可以为空（闲聊那条路径不再重复"你记得的旧事"）
+        lines.append(f"- （{label}）{text}" if label else f"- {text}")
+    lines.append("")
+    lines.append("这是背景，不是话题。**绝大多数时候你就正常聊，一句都别提。**")
+    lines.append("只有真的接得上、说出来不突兀时，才顺口带一句，")
+    lines.append("说完接着聊，不要追问、不要长篇回忆、不要一次提好几件。")
+    return "\n".join(lines)
+
+def topic_block(items: list[tuple[str, str]] | None) -> str:
+    """渲染"主动开口的素材"：她记得的几件事，挑一条说。"""
+    if not items:
+        return ""
+    lines = ["【你记着的事 · 挑一条说】"]
+    lines.append("下面是这几件事，新的在前：")
+    for label, text in items:
+        lines.append(f"- （{label}）{text}")
+    lines.append("")
+    lines.append("这次是你主动开口。**只挑一条**，用自己的话把它说出来，")
+    lines.append("像忽然想起来那样，不要像汇报，也不要复述原句。")
+    return "\n".join(lines)
 
 def memory_block(items: list[tuple[str, str]] | None) -> str:
-    """渲染检索到的记忆。None 表示未检索，空列表表示检索无命中。"""
+    """渲染"她记得的事"。"""
     if items is None:
         return ""
 
     if not items:
         return (
-            "【你记得的事】\n"
+            "【你记得的事 · 这次没检索到】\n"
             "长效记忆里没有检索到这件事。\n"
             "但**先看你们刚才说了什么**：如果他这轮之前刚提过，就按刚才说的答，\n"
             "别否定他刚说过的话（他刚说完「我姐姐叫小月」，你不能答「没听你提过」）。\n"
@@ -158,8 +187,12 @@ def memory_block(items: list[tuple[str, str]] | None) -> str:
             "应该说：「你跟我说过吗？」「没听你提过。」「这个我不知道。」"
         )
 
-    lines = ["【你记得的事】"]
-    lines.append("他告诉过你的，只有下面这几条。**你的回答只能基于它们。**")
+    # 检索结果放最前面，规则放后面。
+    lines = [f"【你记得的事 · 这次检索到 {len(items)} 条】"]
+    for label, text in items:
+        lines.append(f"- （{label}）{text}")
+    lines.append("")
+    lines.append("**你的回答只能基于上面这几条。**")
     lines.append("不要说「根据记忆」「记录显示」「我查过」——这些不是人话。")
     lines.append("")
     lines.append("**不要往外扩：**")
@@ -175,13 +208,10 @@ def memory_block(items: list[tuple[str, str]] | None) -> str:
     lines.append("如果几条都沾边，只挑和最贴近的一条说，不要一次全倒出来。")
     lines.append("如果一条都不沾边，就当没想起来——不要硬套，也不要假装记得。")
     lines.append("被追问过去的事、而你确实想不起来时，可以说「记不清了」——但不要编。")
-    for label, text in items:
-        lines.append(f"- {label}：{text}")
     return "\n".join(lines)
 
-
 def action_block(appendix: list[tuple[str, str, str]], stage_label: str) -> str:
-    """渲染当前阶段已解锁的举动，分 serve 与 invite 两类。"""
+    """渲染"你能对他做什么"。"""
     if not appendix:
         return (
             "【你能为他做的事】\n"

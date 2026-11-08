@@ -1,7 +1,4 @@
-"""从旧版 .doc 中提取 PNG，不依赖第三方库。
-
-.doc 是 OLE 复合文档，需先按 FAT 扇区链拼出连续流，再在其中查找图片。
-"""
+"""从旧版 .doc 中提取 PNG。"""
 
 from __future__ import annotations
 
@@ -13,7 +10,6 @@ PNG_SIG = b"\x89PNG\r\n\x1a\n"
 PNG_END = b"IEND\xaeB`\x82"
 FREESECT = 0xFFFFFFFF   # 扇区未使用
 ENDOFCHAIN = 0xFFFFFFFE  # 链到此为止——两个值不是一回事，混了就会越界
-
 
 class Ole:
     def __init__(self, data: bytes) -> None:
@@ -111,7 +107,6 @@ class Ole:
             guard += 1
         return out[:size]
 
-
 def find_png_bytes(data: bytes) -> list[bytes]:
     out: list[bytes] = []
     pos = 0
@@ -129,12 +124,10 @@ def find_png_bytes(data: bytes) -> list[bytes]:
         pos = end
     return out
 
-
 def png_size(blob: bytes) -> tuple[int, int]:
     if len(blob) < 24:
         return (0, 0)
     return struct.unpack(">II", blob[16:24])
-
 
 def main() -> int:
     if len(sys.argv) < 3:
@@ -167,7 +160,6 @@ def main() -> int:
         (dst / name).write_bytes(blob)
         print(f"  {name}  {w}x{h}  {len(blob) // 1024} KB")
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

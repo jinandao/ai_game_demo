@@ -1,7 +1,4 @@
-"""对话域：五个意图处理器。
-
-gather() 只负责取事实，返回 None 表示直通语气层。
-"""
+"""五个意图处理器。"""
 
 from __future__ import annotations
 
@@ -23,7 +20,6 @@ from ..knowledge.base import KnowledgeBase
 from ..memory.retriever import MemoryRetriever
 from .composer import Composer
 
-
 @dataclass(frozen=True)
 class DialogueRequest:
     text: str
@@ -35,25 +31,22 @@ class DialogueRequest:
     scope: Scope | None = None
     query: str = ""          # 路由层给的检索词；空则退回原文
 
-
 class IntentHandler(ABC):
     intent: ClassVar[Intent]
 
     @abstractmethod
     def gather(self, req: DialogueRequest) -> Facts | None: ...
 
-
 class ChitchatHandler(IntentHandler):
-    """闲聊不产出事实，直接交给语气层。"""
+    """闲聊永远直通。"""
 
     intent = Intent.CHITCHAT
 
     def gather(self, req: DialogueRequest) -> None:
         return None
 
-
 class OutOfScopeHandler(IntentHandler):
-    """越界给中性事实，不给禁令；措辞由语气层决定。"""
+    """越界不给规则，给"拒答依据"，措辞交给语气层。"""
 
     intent = Intent.OUT_OF_SCOPE
 
@@ -67,12 +60,8 @@ class OutOfScopeHandler(IntentHandler):
             kind="out_of_scope",
         )
 
-
 class FactQueryHandler(IntentHandler):
-    """世界观 / 角色背景。
-
-    低于阈值直接返回空——防幻觉靠"没把握时检索返回空"，不靠提示词叮嘱。
-    """
+    """世界观 / 角色背景。"""
 
     intent = Intent.FACT_QUERY
 
@@ -87,7 +76,7 @@ class FactQueryHandler(IntentHandler):
         query = req.query or req.text
         hits = self._kb.retrieve(query, scope=scope, npc_id=req.persona.npc_id)
 
-        # 分类可能偏差：scope 查不到时回落 world 重查。
+        # 对应 scope 查不到就回落一次 world
         if not hits and scope is not Scope.WORLD:
             hits = self._kb.retrieve(query, scope=Scope.WORLD, npc_id=req.persona.npc_id)
 
@@ -95,9 +84,8 @@ class FactQueryHandler(IntentHandler):
             return Facts.empty(confidence=hits[0].score if hits else 0.0)
         return self._composer.compose(hits, intent=self.intent)
 
-
 class RecallHandler(IntentHandler):
-    """玩家自身信息。记忆由 pipeline 注入，此处不重复检索。"""
+    """玩家自己的信息。"""
 
     intent = Intent.RECALL
 
@@ -107,7 +95,6 @@ class RecallHandler(IntentHandler):
 
     def gather(self, req: DialogueRequest) -> Facts | None:
         return None
-
 
 class ActionHandler(IntentHandler):
     """动作。闸门判定在这里，执行不在——执行必须等玩家明确同意。"""
@@ -158,7 +145,6 @@ class ActionHandler(IntentHandler):
             [f"她想{action_id.value}，但必须先问玩家同不同意；现在还没问过"],
             kind="action_proposal",
         )
-
 
 def default_handlers(
     *,

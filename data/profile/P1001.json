@@ -3,18 +3,18 @@
   "name": "玩家",
   "affection": {
     "A": {
-      "affinity": 10,
+      "affinity": 0,
       "stage": "stranger",
-      "daily_gain": 1,
+      "daily_gain": 0,
       "last_gain": null
     },
     "B": {
-      "affinity": 42,
-      "stage": "stranger",
-      "daily_gain": 2,
+      "affinity": 14,
+      "stage": "acquaintance",
+      "daily_gain": 0,
       "last_gain": null
     }
   },
   "flags": {},
-  "last_session_at": "2026-10-23T21:48:22.161075"
+  "last_session_at": "2026-11-04T18:58:43.930517"
 }

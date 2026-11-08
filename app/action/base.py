@@ -1,4 +1,4 @@
-"""动作域：动作工具的抽象。"""
+"""动作工具的抽象。"""
 
 from __future__ import annotations
 
@@ -7,7 +7,6 @@ from typing import ClassVar
 
 from ..domain.enums import ActionId, Stage
 from ..domain.models import ActionContext, ActionResult
-
 
 class ActionTool(ABC):
     id: ClassVar[ActionId]

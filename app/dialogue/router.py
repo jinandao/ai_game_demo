@@ -1,4 +1,4 @@
-"""对话域：意图路由，解析失败降级为闲聊。"""
+"""意图路由。"""
 
 from __future__ import annotations
 
@@ -25,7 +25,6 @@ NEED_BY_INTENT = {
     Intent.RECALL: ("memory",),
 }
 
-
 class IntentRouter:
     def __init__(self, llm: LLMClient) -> None:
         self._llm = llm
@@ -33,8 +32,7 @@ class IntentRouter:
     def route(
         self, text: str, *, ctx: SessionContext, profile: Profile, persona: Persona
     ) -> IntentResult:
-        # 8 条约等于 4 轮；指代消解需要更长的上下文。
-        # router 的提示词很短，多给几条成本几乎为零。
+        # 8 条 ≈ 4 轮。判意图主要靠"这句话在接什么"，4 条经常不够——
         recent = "\n".join(f"{t.role}：{t.text}" for t in ctx.recent_turns[-8:])
         messages = [
             {"role": "system", "content": ROUTER_SYSTEM},

@@ -1,26 +1,36 @@
 # assets/
 
-美术资源放这里。缺失的文件由渲染层用色块占位，不影响运行。
+美术资源放这里。**没有也能跑**——缺哪张，哪张就用色块占位。
+
+详细规格与生成提示词见项目根目录的 `ART_ASSETS.md`。
 
 ## 命名
 
+背景图按**场景世界尺寸**出，不是窗口尺寸——相机滚动时整张图一起动。
+尺寸以 `app/behavior/world.py` 里每个 Scene 的 w/h 为准。
+
 | 文件 | 尺寸 | 说明 |
 |---|---|---|
-| `bg_outdoor.png` | 1440×810 | 户外背景 |
-| `bg_workshop.png` | 1440×810 | 修理间 |
-| `bg_canteen.png` | 1440×810 | 食堂 |
-| `bg_lan_room.png` | 1440×810 | 岚的房间 |
-| `bg_mio_room.png` | 1440×810 | 澪的隔间 |
-| `prop_container.png` | 240×150 | 集装箱 |
-| `prop_workshop_b.png` | 250×210 | 修理间外观 |
-| `prop_canteen_b.png` | 230×190 | 食堂外观 |
-| `prop_tree.png` | 120×200 | 所有树共用 |
-| `prop_lake.png` | 380×260 | 蓄水池 |
-| `prop_bench.png` | 120×50 | 长椅 |
-| `prop_board.png` | 190×90 | 广告牌 |
-| `prop_laundry.png` | 180×60 | 晾衣绳 |
-| `prop_stall.png` | 160×90 | 交换所摊位 |
-| `prop_gate.png` | 200×70 | 闸门 |
+| `bg_outdoor.png` | 2880×1620 | 户外背景（4 屏） |
+| `bg_ruins.png` | 2200×1400 | 废墟 |
+| `bg_hall.png` | 2000×1200 | 城镇大厅 |
+| `bg_workshop.png` | 1800×1100 | 修理间 |
+| `bg_canteen.png` | 1800×1100 | 食堂 |
+| `bg_storage.png` | 1800×1100 | 杂物间 |
+| `bg_kitchen.png` | 1600×1000 | 后厨 |
+| `bg_garden.png` | 1600×1000 | 花园 |
+| `bg_lan_room.png` | 1500×950 | 岚的房间 |
+| `bg_mio_room.png` | 1500×950 | 澪的隔间 |
+| `prop_container.png` | 340×220 | 集装箱 |
+| `prop_workshop_b.png` | 380×300 | 修理间外观 |
+| `prop_canteen_b.png` | 380×300 | 食堂外观 |
+| `prop_tree.png` | 150×240 | 所有树共用 |
+| `prop_lake.png` | 560×340 | 蓄水池 |
+| `prop_bench.png` | 220×80 | 长椅 |
+| `prop_board.png` | 300×130 | 广告牌 |
+| `prop_laundry.png` | 280×100 | 晾衣绳 |
+| `prop_stall.png` | 260×140 | 交换所摊位 |
+| `prop_gate.png` | 320×100 | 闸门 |
 | `spr_A.png` | 144×288 | 岚的精灵表（4 行 × 3 帧，48×72/帧） |
 | `spr_B.png` | 144×288 | 澪的精灵表 |
 | `portrait_A_calm.png` | 540×662 | 岚 · 平静 |

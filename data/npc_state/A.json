@@ -1,12 +1,12 @@
 {
   "npc_id": "A",
-  "stamina": 1.0,
+  "stamina": 0.88,
   "mood": 0.5,
-  "last_decision_at": "2026-10-23T21:51:06.858547",
+  "last_decision_at": "2026-11-04T18:58:36.752856",
   "last_decision": {
-    "intent": "work",
-    "reason": "",
-    "urgency": 0.5,
+    "intent": "gather",
+    "reason": "材料只剩 2 件",
+    "urgency": 0.6267370385375481,
     "about_memory": null
   },
   "cooldowns": {}

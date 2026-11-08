@@ -1,7 +1,4 @@
-"""提示词：行为脚本与决策。
-
-决策层只输出意图词，流程由 behavior/director.py 的模板翻译。
-"""
+"""提示词：行为脚本。"""
 
 from __future__ import annotations
 
@@ -71,7 +68,6 @@ work 是"想不出要做什么"时的兜底，不是日常答案。
 
 **「最近做过的事」是记录，不是命令。** 上面没有 work 不代表你必须工作，
 上面全是 work 更不意味着你只会工作。"""
-
 
 def build_decision_system() -> str:
     return DECISION_SYSTEM

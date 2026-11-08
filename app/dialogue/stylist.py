@@ -1,7 +1,4 @@
-"""对话域：语气层，把中性事实转成角色口吻。
-
-不得增删 facts 中的事实；banned 词表在此兜底替换。
-"""
+"""语气层，把中性事实说成角色口吻。"""
 
 from __future__ import annotations
 
@@ -10,17 +7,16 @@ import re
 from ..domain.enums import Stage
 from ..domain.models import Facts, Persona, Turn
 from ..infra.llm import LLMClient, LLMError
-from ..prompts.chat import build_chat_system, build_chat_user
+from ..prompts.chat import GOTO_SCENES, build_chat_system, build_chat_user
 
 _QUOTED = re.compile(r'[「"“]([^」"”]{1,300})[」"”]')
 _OUTER = re.compile(r'^[\s「"“]+(.*?)[\s」"”]+$', re.S)
 _NARRATION_HINT = re.compile(r"她|他|抬头|低头|笑了|转身|顿了顿|看了看")
 
 # 模型想带玩家走的时候，在回复末尾加这个标记。
-# 由代码执行"关对话 + 走过去"，而不是让模型描述一遍动作。
 _GOTO = re.compile(r"\[\[\s*goto\s*:\s*([a-z_]+)\s*\]\]", re.I)
-VALID_SCENES = {"outdoor", "workshop", "canteen", "lan_room", "mio_room"}
-
+# 和提示词里的白名单同源（`prompts/chat.py GOTO_SCENES`）。
+VALID_SCENES = {sid for sid, _ in GOTO_SCENES}
 
 def _extract_goto(text: str) -> tuple[str, str | None]:
     """剥离 [[goto:xxx]]，返回（干净台词，目标场景）。"""
@@ -31,9 +27,8 @@ def _extract_goto(text: str) -> tuple[str, str | None]:
     cleaned = _GOTO.sub("", text).strip()
     return cleaned, scene if scene in VALID_SCENES else None
 
-
 def _strip_narration(text: str) -> str:
-    """去掉第三人称旁白，只保留引号内的台词。"""
+    """把"小说体"扒成纯台词。"""
     stripped = text.strip()
     if not _QUOTED.search(stripped):
         m = _OUTER.match(stripped)
@@ -51,10 +46,9 @@ def _strip_narration(text: str) -> str:
 
     return "".join(kept).strip()
 
-
 class Stylist:
     def __init__(self, llm: LLMClient, max_recent: int = 24) -> None:
-        """max_recent：给模型多少条历史，24 条约等于 12 轮，与 num_ctx=8192 匹配。"""
+        """max_recent：给模型多少条历史（一条 = 一次发言）。"""
         self._llm = llm
         self._max_recent = max_recent
         self.last_system_prompt: str = ""   # 调试面板要能看见真正发出去的提示词
@@ -68,29 +62,38 @@ class Stylist:
         persona: Persona,
         recent_turns: tuple[Turn, ...],
         memory_items: list[tuple[str, str]] | None = None,
+        topic_items: list[tuple[str, str]] | None = None,
         unlocked_actions: list[tuple[str, str, str]] | None = None,
         stage: Stage = Stage.STRANGER,
         ambience: str = "",
         outcome: str = "",
         summary: str = "",
+        places: tuple[str, ...] = (),
+        mood: str = "",
         recent_limit: int | None = None,
         on_delta=None,
     ) -> str:
-        """recent_limit：本轮给多少条历史，None 用默认值。"""
+        """recent_limit：这一轮给多少条历史，None = 用默认值。"""
         limit = self._max_recent if recent_limit is None else recent_limit
         system = build_chat_system(
             persona=persona,
             facts=facts,
             memory_items=memory_items,
+            # 主动开口时，话题只能从这几条记忆里挑（见 prompts/chat.py 的 recall 分支）
+            topic_items=topic_items,
             unlocked_actions=unlocked_actions,
             stage=stage,
             ambience=ambience,
             outcome=outcome,
             summary=summary,
+            places=places,
+            mood=mood,
         )
         user = build_chat_user(
             facts=facts,
             recent=recent_turns[-limit:] if limit > 0 else recent_turns,
+            # 走了记忆检索的轮次，user 里不能再写「这是闲聊」
+            memory=bool(memory_items),
         )
         self.last_system_prompt = system
         self.last_goto = None

@@ -1,4 +1,4 @@
-"""基础设施：文本嵌入。失败时抛 EmbedError，由调用方决定降级。"""
+"""文本嵌入。"""
 
 from __future__ import annotations
 
@@ -10,10 +10,8 @@ import urllib.request
 from abc import ABC, abstractmethod
 from typing import Any
 
-
 class EmbedError(RuntimeError):
     pass
-
 
 class Embedder(ABC):
     @abstractmethod
@@ -24,9 +22,8 @@ class Embedder(ABC):
     @abstractmethod
     def dim(self) -> int: ...
 
-
 class OllamaEmbedder(Embedder):
-    """走 ollama 的 /api/embed，新老两版接口都试，新版失败退回单条接口。"""
+    """qwen3-embedding:0.6b 之类，走 ollama 的 /api/embed。"""
 
     def __init__(
         self,
@@ -101,13 +98,11 @@ class OllamaEmbedder(Embedder):
         except json.JSONDecodeError as e:
             raise EmbedError("embed 返回的不是 JSON") from e
 
-
 def _normalize(vec: list[float]) -> list[float]:
     norm = math.sqrt(sum(float(x) * float(x) for x in vec))
     if norm <= 1e-12:
         return [0.0] * len(vec)
     return [float(x) / norm for x in vec]
-
 
 def cosine(a: list[float], b: list[float]) -> float:
     """两边都已归一化，所以直接点积。"""

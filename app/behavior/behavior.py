@@ -1,7 +1,4 @@
-"""行为域：叶子行为基类。
-
-支持继承重写，也支持给实例赋值 handler / on_start / on_finish 做运行时改写。
-"""
+"""叶子行为基类。"""
 
 from __future__ import annotations
 
@@ -13,7 +10,6 @@ from .node import Node, Status
 
 Handler = Callable[[BehaviorContext, "Behavior"], Status]
 Hook = Callable[[BehaviorContext, "Behavior"], None]
-
 
 class Behavior(Node):
     op: ClassVar[str] = "behavior"
@@ -37,7 +33,7 @@ class Behavior(Node):
         self._started = False
         self._done = False
 
-    # ── 执行骨架（不要重写） ──
+    # ── 执行骨架 ──
 
     def tick(self, ctx: BehaviorContext) -> Status:
         if self._done:
@@ -85,9 +81,8 @@ class Behavior(Node):
         args = ", ".join(f"{k}={v!r}" for k, v in self.params.items())
         return f"{pad}{self.op}({args})"
 
-
 class EmptyBehavior(Behavior):
-    """空行为，永远 RUNNING。不能放在 seq 中间，否则后面的节点不会执行。"""
+    """空行为：什么都不做，永远 RUNNING。"""
 
     def start(self, ctx: BehaviorContext) -> None:
         ctx.agent.posture = "stand"

@@ -1,4 +1,4 @@
-"""行为域：op 名到实现的注册表。"""
+"""op 名到实现的注册表。"""
 
 from __future__ import annotations
 
@@ -10,7 +10,6 @@ from .library import DEFAULT_LEAVES
 from .node import Node
 
 Factory = Callable[..., Node]
-
 
 class BehaviorRegistry:
     def __init__(self) -> None:
@@ -48,7 +47,6 @@ class BehaviorRegistry:
         if factory is None:
             return None
         return factory(**params)
-
 
 def default_registry() -> BehaviorRegistry:
     reg = BehaviorRegistry()

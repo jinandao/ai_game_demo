@@ -1,4 +1,4 @@
-"""行为域：标准行为库，按 op 名注册到 BehaviorRegistry。"""
+"""标准行为库，按 op 名注册。"""
 
 from __future__ import annotations
 
@@ -7,12 +7,12 @@ import random
 
 from ..domain.enums import ActionId
 from .behavior import Behavior, EmptyBehavior
-from .context import BehaviorContext, SpeakRequest, WorldEvent
+from .context import ACTION_RESULT, BehaviorContext, SpeakRequest, WorldEvent
 from .node import Status
-
+from .world import PLAYER
 
 class MoveTo(Behavior):
-    """移动到场景内坐标或跨场景移动。place 支持场景 id、$player、?；跨场景走最短路。"""
+    """移动到场景内的坐标，或跨场景移动。"""
 
     op = "move"
     ARRIVE_EPS = 6.0
@@ -55,8 +55,13 @@ class MoveTo(Behavior):
             else tuple(float(v) for v in ctx.world.entry(dest))  # type: ignore[assignment]
         )
 
+        # 找玩家：他已经在这个场景里的话，走到他身边，而不是走到场景入口。
+        if str(self.place) == PLAYER and dest == ctx.agent.place:
+            px, py = ctx.player_xy
+            if px or py:
+                self._dest_xy = (px + 38.0, py + 26.0)
+
         # 走到某个道具旁边：灶台、工作台、铁柜……
-        # 落在道具下沿外侧，看起来像"站在它前面"，而不是踩在它身上。
         if self.to_prop:
             scene = ctx.world.scene(dest)
             prop = next((p for p in scene.props if p.id == self.to_prop), None)
@@ -127,19 +132,15 @@ class MoveTo(Behavior):
             )
         )
 
-
 def _facing(dx: float, dy: float) -> str:
     if abs(dx) >= abs(dy):
         return "right" if dx > 0 else "left"
     return "down" if dy > 0 else "up"
 
-
 class Wander(Behavior):
-    """在当前场景内随机走一小段，不跨场景。"""
+    """在当前场景里随便走一小段。"""
 
     op = "wander"
-    X_MIN, X_MAX = 180.0, 1260.0
-    Y_MIN, Y_MAX = 340.0, 740.0
 
     def __init__(self, radius: float = 220.0, **kw) -> None:
         super().__init__(**kw)
@@ -151,8 +152,10 @@ class Wander(Behavior):
         ax, ay = ctx.agent.x, ctx.agent.y
         x = ax + random.uniform(-self.radius, self.radius)
         y = ay + random.uniform(-self.radius * 0.5, self.radius * 0.5)
-        x = max(self.X_MIN, min(self.X_MAX, x))
-        y = max(self.Y_MIN, min(self.Y_MAX, y))
+        # 会让两个人永远只在左上角那一块转，走到大厅另一头就看不到了。
+        left, top, right, bottom = ctx.world.bounds(ctx.agent.place)
+        x = max(left, min(right, x))
+        y = max(top, min(bottom, y))
 
         self._move = MoveTo(place=ctx.agent.place, x=x, y=y)
         self._move.start(ctx)
@@ -167,7 +170,6 @@ class Wander(Behavior):
         if self._move is not None:
             self._move.finish(ctx)
             self._move = None
-
 
 class Say(Behavior):
     """说一句。只说 topic，台词由对话层生成——行为层不编话。"""
@@ -193,9 +195,8 @@ class Say(Behavior):
         self._left -= ctx.dt
         return Status.RUNNING if self._left > 0 else Status.SUCCESS
 
-
 class Invite(Behavior):
-    """发起邀请。await_consent=True 时一直 RUNNING，直到 blackboard 写入答复。"""
+    """发起邀请。"""
 
     op = "invite"
 
@@ -231,9 +232,8 @@ class Invite(Behavior):
             return Status.RUNNING
         return Status.SUCCESS if result else Status.FAILURE
 
-
 class Offer(Behavior):
-    """提议为玩家做一件事，只问不做。执行要等玩家在对话里确认。"""
+    """提议为他做一件事。"""
 
     op = "offer"
 
@@ -255,9 +255,8 @@ class Offer(Behavior):
     def update(self, ctx: BehaviorContext) -> Status:
         return Status.SUCCESS
 
-
 class Deliver(Behavior):
-    """交付刚做完的事，并把 outcome 挂到事件上供后续对话引用。"""
+    """交付：把刚做完的事交到他手上，然后重新开口。"""
 
     op = "deliver"
 
@@ -286,7 +285,6 @@ class Deliver(Behavior):
     def update(self, ctx: BehaviorContext) -> Status:
         return Status.SUCCESS
 
-
 class Wait(Behavior):
     op = "wait"
 
@@ -303,13 +301,107 @@ class Wait(Behavior):
         self._left -= ctx.dt
         return Status.RUNNING if self._left > 0 else Status.SUCCESS
 
+class Work(Behavior):
+    """干一会儿活，然后把结果交给上层。"""
 
-# ── 空行为（永远 RUNNING） ──
+    op = "perform"
 
+    # 等判决的上限。上层在同一帧的 drain_events 里就写回来了
+    RESULT_TIMEOUT = 0.5
+
+    def __init__(
+        self,
+        seconds: float = 6.0,
+        kind: str = "",
+        posture: str = "",
+        event: str = "npc_action",
+        payload: dict | None = None,
+        wait_result: bool = False,
+        **kw,
+    ) -> None:
+        super().__init__(**kw)
+        self.seconds = float(seconds)
+        self.kind = kind or str(self.op)
+        self.posture = posture
+        self.event = event
+        self.payload = dict(payload or {})
+        self.wait_result = bool(wait_result)
+        # 失败原因。执行器在 FAILURE 时读它，写进 skipped / 上报给决策层。
+        self.reason = ""
+        self.params.update(seconds=self.seconds, kind=self.kind)
+        if posture:
+            self.params.update(posture=posture)
+        self._left = 0.0
+        self._wait_left = 0.0
+        self._fired = False
+
+    def start(self, ctx: BehaviorContext) -> None:
+        if self.posture:
+            ctx.agent.posture = self.posture
+            ctx.signal(
+                WorldEvent("posture", ctx.agent.npc_id, {"posture": self.posture})
+            )
+        self._left = self.seconds
+        self._fired = False
+        self._wait_left = 0.0
+        self.reason = ""
+        # 清掉上一条动作留下的判决。不清的话，这条动作会立刻读到上一条的
+        ctx.agent.blackboard.pop(ACTION_RESULT, None)
+        if self.seconds <= 0:
+            # 收不住的表演：没有"完成"可等，只能现在发（它不产生玩法结果）
+            self._fire(ctx)
+
+    def update(self, ctx: BehaviorContext) -> Status:
+        if self.seconds <= 0:
+            return Status.RUNNING          # 等外部打断
+
+        if not self._fired:
+            self._left -= ctx.dt
+            if self._left > 0:
+                return Status.RUNNING
+            self._fire(ctx)                # 做完了才落地
+            if not self.wait_result:
+                return Status.SUCCESS
+            # 挂起等判决。下一帧开始看黑板。
+            self._wait_left = self.RESULT_TIMEOUT
+            return Status.RUNNING
+
+        got = ctx.agent.blackboard.pop(ACTION_RESULT, None)
+        if got is not None:
+            ok = bool(got[0]) if isinstance(got, (tuple, list)) else bool(got)
+            msg = str(got[1]) if isinstance(got, (tuple, list)) and len(got) > 1 else ""
+            if ok:
+                return Status.SUCCESS
+            self.reason = msg
+            return Status.FAILURE
+
+        self._wait_left -= ctx.dt
+        if self._wait_left <= 0:
+            # 没人来结算：当成功。行为树不许因为"上层没接"就卡住。
+            return Status.SUCCESS
+        return Status.RUNNING
+
+    def _fire(self, ctx: BehaviorContext) -> None:
+        if self._fired:
+            return
+        self._fired = True
+        ctx.signal(
+            WorldEvent(
+                self.event,
+                ctx.agent.npc_id,
+                {"act": self.kind, **self.payload},
+            )
+        )
+
+    def finish(self, ctx: BehaviorContext) -> None:
+        if self.posture:
+            ctx.agent.posture = "stand"
+            ctx.signal(WorldEvent("posture", ctx.agent.npc_id, {"posture": "stand"}))
+
+# ─────────────────────── 空行为（站着，什么都不做） ───────────────────────
 
 class Idle(EmptyBehavior):
     op = "idle"
-
 
 class Rest(EmptyBehavior):
     op = "rest"
@@ -317,7 +409,6 @@ class Rest(EmptyBehavior):
     def start(self, ctx: BehaviorContext) -> None:
         ctx.agent.posture = "lie"
         ctx.signal(WorldEvent("posture", ctx.agent.npc_id, {"posture": "lie"}))
-
 
 class AppreciateScenery(EmptyBehavior):
     """欣赏美景。目前是空实现，只是换个姿势站在那儿。"""
@@ -328,7 +419,6 @@ class AppreciateScenery(EmptyBehavior):
         ctx.agent.posture = "lean"
         ctx.signal(WorldEvent("posture", ctx.agent.npc_id, {"posture": "lean"}))
 
-
 DEFAULT_LEAVES = [
     MoveTo,
     Wander,
@@ -337,6 +427,7 @@ DEFAULT_LEAVES = [
     Offer,
     Deliver,
     Wait,
+    Work,
     Idle,
     Rest,
     AppreciateScenery,

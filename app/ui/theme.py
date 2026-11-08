@@ -1,4 +1,4 @@
-"""UI：主题与字体。"""
+"""主题与字体。"""
 
 from __future__ import annotations
 
@@ -58,7 +58,6 @@ _FONT_CANDIDATES = [
     "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
     "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
 ]
-
 
 class Fonts:
     def __init__(self) -> None:

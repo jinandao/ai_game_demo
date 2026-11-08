@@ -1,8 +1,4 @@
-"""记忆域：ChatSession，会话门面。
-
-独占三件事：L0/L1 生命周期、抽取时机、把抽取产物交给 store 与好感度。
-turns 全量保留，只记录覆盖到哪一轮，保证 idx 连续。
-"""
+"""ChatSession，会话门面。"""
 
 from __future__ import annotations
 
@@ -24,10 +20,8 @@ from .compactor import Compactor, estimate_tokens
 from .extractor import Extractor, render_turns
 from .store import MemoryStore
 
-
 class SessionClosed(RuntimeError):
     pass
-
 
 class ChatSession:
     def __init__(
@@ -45,6 +39,8 @@ class ChatSession:
         clock: Clock,
         ambience: str = "",
         outcome: str = "",
+        places: tuple[str, ...] = (),
+        mood: str = "",
     ) -> None:
         self.session_id = session_id
         self.player = player
@@ -52,6 +48,9 @@ class ChatSession:
         self.npc_id = persona.npc_id
         self.ambience = ambience      # 当前场景的客观环境，注入提示词防止天气乱编
         self.outcome = outcome        # 她刚为他做的事，写进「刚刚发生」
+        self.places = places          # 世界里的场景名，渲染地名白名单用
+        # 开场时的心情（心情不佳 / 生气 / 难过 / 开心 / 害羞 / 幸福，空 = 没触发）。
+        self.mood = mood
 
         self.turns: list[Turn] = []          # L0，全量保留
         self.summary: SessionSummary | None = None  # L1
@@ -75,7 +74,7 @@ class ChatSession:
     # ─────────────────────── 对外 ───────────────────────
 
     def preload_npc_turn(self, text: str) -> Turn | None:
-        """把 NPC 主动开口的那一句写进 L0，让她的第一次回复能接上自己刚说的话。"""
+        """把 NPC 主动开口的那一句写进 L0。"""
         if self.is_closed or not text.strip():
             return None
         return self._append("npc", text.strip())
@@ -94,6 +93,7 @@ class ChatSession:
             persona=self.persona,
             consent_granted=self._consent,
             pending_action=self._pending_action,
+            mood=self.mood,
             on_delta=on_delta,
         )
         npc_turn = self._append("npc", reply)
@@ -141,7 +141,7 @@ class ChatSession:
         return list(self.turns)
 
     def stats(self) -> dict[str, object]:
-        """会话统计，供调试面板使用。"""
+        """调试面板用。这是调试用。"""
         return {
             "session_id": self.session_id,
             "turns": len(self.turns),
@@ -175,6 +175,7 @@ class ChatSession:
             turn_count=len(self.turns),
             ambience=self.ambience,
             outcome=self.outcome,
+            places=self.places,
         )
 
     def _maybe_compact(self) -> None:

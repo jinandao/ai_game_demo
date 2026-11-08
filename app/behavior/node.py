@@ -1,7 +1,4 @@
-"""行为域：行为树节点。
-
-四种组合子（seq / sel / repeat / parallel），三种状态。
-"""
+"""行为树节点：四种组合子，三种状态。"""
 
 from __future__ import annotations
 
@@ -11,12 +8,10 @@ from typing import Iterator
 
 from .context import BehaviorContext
 
-
 class Status(str, Enum):
     RUNNING = "running"
     SUCCESS = "success"
     FAILURE = "failure"
-
 
 class Node(ABC):
     op: str = "node"
@@ -32,7 +27,6 @@ class Node(ABC):
 
     def to_dsl(self, level: int = 0) -> str:
         return " " * (level * 2) + self.op
-
 
 class Sequence(Node):
     op = "seq"
@@ -67,7 +61,6 @@ class Sequence(Node):
         body = "\n".join(c.to_dsl(level + 1) for c in self.children)
         return f"{pad}seq {{\n{body}\n{pad}}}"
 
-
 class Selector(Node):
     op = "sel"
 
@@ -101,7 +94,6 @@ class Selector(Node):
         body = "\n".join(c.to_dsl(level + 1) for c in self.children)
         return f"{pad}sel {{\n{body}\n{pad}}}"
 
-
 class Repeat(Node):
     op = "repeat"
 
@@ -134,7 +126,6 @@ class Repeat(Node):
         n = "inf" if self.times < 0 else str(self.times)
         return f"{pad}repeat({n}) {{\n{self.child.to_dsl(level + 1)}\n{pad}}}"
 
-
 class Parallel(Node):
     op = "parallel"
 
@@ -158,8 +149,6 @@ class Parallel(Node):
     def leaves(self) -> Iterator["Behavior"]:
         for c in self.children:
             yield from c.leaves()
-
-
 
     def to_dsl(self, level: int = 0) -> str:
         pad = " " * (level * 2)

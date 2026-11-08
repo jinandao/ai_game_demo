@@ -49,6 +49,5 @@ action_id 只在 action 时给：
 
 拿不准 intent 就选 chitchat。问好感度、关系进展也算 chitchat —— 那由系统直接读字段，不靠检索。"""
 
-
 def build_router_user(recent_text: str, text: str) -> str:
     return f"【最近几轮】\n{recent_text}\n\n【这一句】\n{text}"

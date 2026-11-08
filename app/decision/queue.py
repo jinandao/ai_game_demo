@@ -1,8 +1,4 @@
-"""决策队列：攒批、串行、可暂停。
-
-同一帧提交的请求合成一批；对话开启时暂停，避免和聊天抢本地模型。
-submit / tick 在 UI 线程，_run 在 worker 线程，结果由调用方切回 UI 线程再改状态。
-"""
+"""决策队列，攒批、串行、可暂停。"""
 
 from __future__ import annotations
 
@@ -14,9 +10,9 @@ from collections.abc import Callable
 from ..domain.enums import DecisionIntent
 from ..domain.models import Decision, NpcEvent, NpcState, Profile
 from .planner import DecisionPlanner
+from .view import WorldView
 
 MAX_BATCH = 4
-
 
 class DecisionQueue:
     def __init__(
@@ -30,10 +26,12 @@ class DecisionQueue:
         self._max_batch = max_batch
         self._on_results = on_results
 
-        self._pending: dict[str, tuple[Profile, NpcState, str, str]] = {}
+        self._pending: dict[str, tuple[Profile, NpcState, str, str, WorldView]] = {}
         self._lock = threading.Lock()
         self._busy = False
         self._paused = False
+        # 代数：`discard()` 自增。正在跑的那一批拿的是旧代数，结果会被丢掉
+        self._epoch = 0
 
         # 调试用
         self._runs = 0
@@ -47,12 +45,17 @@ class DecisionQueue:
         self._on_results = callback
 
     def pause(self) -> None:
-        """对话开启时调用。已经在跑的那一批拦不住（本地请求不能 abort），
-        但不会再发新的。"""
+        """对话开启时调用。"""
         self._paused = True
 
     def resume(self) -> None:
         self._paused = False
+
+    def discard(self) -> None:
+        """丢掉待跑的和正在跑的这批决策（重置 / 读档后用）。"""
+        with self._lock:
+            self._pending.clear()
+            self._epoch += 1
 
     @property
     def paused(self) -> bool:
@@ -71,10 +74,13 @@ class DecisionQueue:
         state: NpcState,
         here: str = "",
         player_at: str = "",
+        view: WorldView | None = None,
     ) -> None:
         with self._lock:
             # 同一个 NPC 只保留最新一份：攒了一分钟再排队的旧决策没有意义
-            self._pending[npc_id] = (profile, state, here, player_at)
+            self._pending[npc_id] = (
+                profile, state, here, player_at, view or WorldView(here=here, player_at=player_at)
+            )
 
     # ── 驱动 ──
 
@@ -94,10 +100,15 @@ class DecisionQueue:
             self._busy = True
             self._runs += 1
             self._last_batch = len(items)
+            epoch = self._epoch
 
-        self._executor.submit(self._run, dict(items))
+        self._executor.submit(self._run, dict(items), epoch)
 
-    def _run(self, batch: dict[str, tuple[Profile, NpcState, str, str]]) -> None:
+    def _run(
+        self,
+        batch: dict[str, tuple[Profile, NpcState, str, str, WorldView]],
+        epoch: int = 0,
+    ) -> None:
         started = time.monotonic()
         events: dict[str, NpcEvent]
         try:
@@ -111,7 +122,13 @@ class DecisionQueue:
                 for npc_id in batch
             }
 
-        self._log(batch, events, time.monotonic() - started)
+        self._log(batch, events, time.monotonic() - started, self._runs)
+
+        # 这一批跑的时候被 discard 过（重置 / 读档）：结果作废。
+        if epoch != self._epoch:
+            with self._lock:
+                self._busy = False
+            return
 
         try:
             if events and self._on_results is not None:
@@ -122,20 +139,25 @@ class DecisionQueue:
 
     @staticmethod
     def _log(
-        batch: dict[str, tuple[Profile, NpcState, str, str]],
+        batch: dict[str, tuple[Profile, NpcState, str, str, WorldView]],
         events: dict[str, NpcEvent],
         cost: float,
+        round_no: int = 0,
     ) -> None:
-        """把每次决策打到控制台。reason 非空表示走了兜底。"""
-        head = f"[决策] {len(batch)} 个 · {cost:.1f}s"
+        """把每次决策打到控制台。"""
+        head = f"[决策] 第 {round_no} 轮 · {len(batch)} 个 · {cost:.1f}s"
         lines = [head]
         for npc_id in batch:
             event = events.get(npc_id)
             if event is None:
                 lines.append(f"  {npc_id} → （无结果）")
                 continue
-            tag = event.decision.reason or "模型"
-            lines.append(f"  {npc_id} → {event.decision.intent.value:<14} ({tag})")
+            d = event.decision
+            goal = d.goal_text or d.intent.value
+            why = f"（{d.reason}）" if d.reason else ""
+            lines.append(f"  {npc_id} 目标：{goal}{why}")
+            if d.plan_text:
+                lines.append(f"       打算：{' → '.join(d.plan_text[:4])}")
         print("\n".join(lines), flush=True)
 
     # ── 调试 ──

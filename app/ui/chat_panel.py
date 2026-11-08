@@ -1,4 +1,4 @@
-"""UI：对话界面，左对话栏、右立绘、底部输入。"""
+"""对话界面。"""
 
 from __future__ import annotations
 
@@ -21,7 +21,6 @@ INPUT_W = 1240
 SEND_X = 1274
 SEND_W = 146
 
-
 class ChatPanel:
     def __init__(self, fonts: T.Fonts, assets: Assets | None = None) -> None:
         self.fonts = fonts
@@ -34,8 +33,7 @@ class ChatPanel:
         self.actions: list[tuple[str, str]] = []
         self.emotion = "calm"          # calm | soft
 
-        # 输入框焦点。打开对话即聚焦——进来的目的就是说话，
-        # 还要再点一下才能打字是没必要的门槛。
+        # 输入框焦点。打开对话即聚焦——进来的目的就是说话
         self.focused = False
         self._textinput_ok = False     # 收到过 TEXTINPUT 就说明 IME 通道是通的
         self._streaming = False        # 正在往最后一条气泡里追加文字
@@ -84,8 +82,6 @@ class ChatPanel:
             self._scroll = 1e9      # 下一帧 clamp 到底
 
     # ── 流式 ──
-    # 她的话是一边生成一边显示的。先占一个空气泡，后面往里追加，
-    # 结束后用最终清洗过的文本覆盖一次（banned 词、小说体清洗都在那时候做）。
 
     def begin_stream(self, role: str = "npc") -> None:
         self.messages.append([role, ""])
@@ -125,8 +121,7 @@ class ChatPanel:
             return None
 
         if event.type == pygame.TEXTEDITING:
-            # 输入法组的词还没上屏。系统候选框由 SDL 负责显示（可能不显示），
-            # 这里把它同时画进输入框——至少玩家能看到自己在打什么。
+            # 输入法组的词还没上屏。系统候选框由 SDL 负责显示（可能不显示）
             self.composition = event.text
             return None
 
@@ -137,8 +132,6 @@ class ChatPanel:
             return None
 
         if event.type == pygame.KEYDOWN:
-            # TEXTINPUT 没来的环境（某些 SDL2 构建 / 无 IME 的窗口）靠这里兜底。
-            # 只在确认 TEXTINPUT 不工作时才用，否则一个字符会被加两遍。
             if not self._textinput_ok and event.unicode and event.unicode.isprintable():
                 if event.mod & (pygame.KMOD_CTRL | pygame.KMOD_ALT):
                     return None                # Ctrl+A 之类不要打进输入框
@@ -394,7 +387,6 @@ class ChatPanel:
         self._hotspots["input"] = box      # 点一下就能聚焦
 
         # 告诉系统输入法"输入框在这里"，候选词窗口才会贴到正确的位置。
-        # 不设的话，Windows 上候选框可能跑到窗口外面，看起来就是"没有候选框"。
         set_rect = getattr(pygame.key, "set_text_input_rect", None)
         if set_rect is not None:
             set_rect(box)
@@ -412,8 +404,7 @@ class ChatPanel:
             hint = font.render("说点什么…（回车发送）", True, T.TEXT_FAINT)
             surface.blit(hint, (text_left, text_top))
         else:
-            # 已确定的文字 + 输入法正在组的词，分成两段画：
-            # 后者用弱色和下划线，让"还没上屏"和"已经输入"看起来不一样
+            # 已确定的文字 + 输入法正在组的词，分成两段画
             shown, comp = self.input_text, self.composition
             limit = box.width - 40
             while shown and font.size(shown + comp)[0] > limit:

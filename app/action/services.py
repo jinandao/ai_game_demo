@@ -1,7 +1,4 @@
-"""照料行为：她为玩家做的事。
-
-统一流程：她提议 → 玩家确认 → 她去做 → 交付。按好感阶段逐层解锁。
-"""
+"""照料动作定义，按好感阶段解锁。"""
 
 from __future__ import annotations
 
@@ -17,7 +14,6 @@ _ORDER = [
     Stage.DEPENDENT,
 ]
 
-
 @dataclass(frozen=True)
 class ServiceAction:
     id: str
@@ -28,7 +24,6 @@ class ServiceAction:
     prop: str           # 走到哪个道具旁；"" = 场景入口
     outcome: str        # 做完之后写进对话的一句话
     when: str           # 她什么时候会想到做这个
-
 
 SERVICES: tuple[ServiceAction, ...] = (
     # ── 澪：她关心人的方式是动手 ──
@@ -153,7 +148,6 @@ SERVICES: tuple[ServiceAction, ...] = (
         when="天晚了、或者他说不想回去",
     ),
     # ── 岚：她关心人的方式是笨的 ──
-    # 送东西在废墟里是大事。
     ServiceAction(
         id="toss_ration",
         label="从包里摸出一包压缩口粮扔给你",
@@ -271,22 +265,16 @@ _BY_NPC: dict[str, tuple[ServiceAction, ...]] = {
     npc: tuple(s for s in SERVICES if s.npc_id == npc) for npc in ("A", "B")
 }
 
-
 def get(action_id: str) -> ServiceAction | None:
     return _BY_ID.get(action_id)
-
 
 def for_stage(npc_id: str, stage: Stage) -> list[ServiceAction]:
     """当前阶段能做的全部照料动作。"""
     level = _ORDER.index(stage)
     return [s for s in _BY_NPC.get(npc_id, ()) if _ORDER.index(s.stage) <= level]
 
-
 def offer_script(action_id: str) -> dict:
-    """提议阶段的脚本：走到玩家身边，问一句，然后停住等确认。
-
-    只做"问"，不做"做"。真正的执行在玩家点确认之后（`perform_script`）。
-    """
+    """提议阶段的脚本：走到玩家身边，问一句，然后停住等确认。"""
     return {
         "op": "seq",
         "children": [
@@ -295,9 +283,8 @@ def offer_script(action_id: str) -> dict:
         ],
     }
 
-
 def perform_script(action: ServiceAction) -> dict:
-    """执行脚本：走开 → 停一下 → 回来 → 交付。"""
+    """执行阶段：走开 → 停一下 → 回来 → 交付。"""
     steps: list[dict] = []
     if action.scene:
         steps.append({"op": "move", "place": action.scene})

@@ -1,7 +1,4 @@
-"""行为域：行为脚本解析器，输入 JSON 或行式 DSL。
-
-列表隐式转 seq，字符串转单个叶子，未知 op 降级为 idle 并记 warning。
-"""
+"""行为脚本解析器，输入 JSON 或行式 DSL。"""
 
 from __future__ import annotations
 
@@ -16,7 +13,7 @@ COMBO_SEL = {"sel", "selector"}
 COMBO_REP = {"repeat", "loop"}
 COMBO_PAR = {"par", "parallel"}
 
-# DSL 允许的裸值参数：move(outdoor) 等价于 move(place=outdoor)
+# DSL 里允许的裸值参数：move(deck) 等价于 move(place=deck)
 DEFAULT_ARG = {
     "move": "place",
     "walk": "place",
@@ -29,10 +26,8 @@ DEFAULT_ARG = {
 
 _HEAD = re.compile(r"^([A-Za-z_][\w]*)\s*(?:\((.*)\))?$")
 
-
 class BehaviorScriptError(ValueError):
     pass
-
 
 class BehaviorScriptParser:
     def __init__(self, registry: BehaviorRegistry) -> None:
@@ -159,14 +154,12 @@ class BehaviorScriptParser:
             return self._fallback()
         return node
 
-
 def _parse_head(head: str) -> tuple[str, dict[str, Any]]:
     m = _HEAD.match(head.strip())
     if not m:
         raise BehaviorScriptError(f"无法解析: {head!r}")
     op, raw = m.group(1), m.group(2)
     return op, _parse_args(op, raw)
-
 
 def _parse_args(op: str, raw: str | None) -> dict[str, Any]:
     if not raw or not raw.strip():
@@ -179,7 +172,6 @@ def _parse_args(op: str, raw: str | None) -> dict[str, Any]:
         else:
             out[DEFAULT_ARG.get(op, "value")] = _coerce(part.strip())
     return out
-
 
 def _split_args(raw: str) -> list[str]:
     parts, buf, quote = [], [], ""
@@ -199,7 +191,6 @@ def _split_args(raw: str) -> list[str]:
     if buf:
         parts.append("".join(buf))
     return [p.strip() for p in parts if p.strip()]
-
 
 def _coerce(text: str) -> Any:
     if len(text) >= 2 and text[0] == text[-1] and text[0] in "\"'":

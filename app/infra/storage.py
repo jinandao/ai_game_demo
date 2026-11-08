@@ -1,4 +1,4 @@
-"""基础设施：文件存储。两类原语，负责原子性，不管业务语义。"""
+"""文件存储，保证写入原子性。"""
 
 from __future__ import annotations
 
@@ -9,12 +9,8 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
-
 class JsonFile:
-    """整文件读写。内容可以是 dict 也可以是 list（记忆就是顶层数组）。
-
-    save 走临时文件 + os.replace，进程被杀不会写坏。
-    """
+    """整文件读写。"""
 
     def __init__(self, path: Path) -> None:
         self.path = path
@@ -40,7 +36,6 @@ class JsonFile:
         finally:
             if os.path.exists(tmp):
                 os.unlink(tmp)
-
 
 class JsonlFile:
     """追加写。永不重写整个文件——半写坏一行的代价远小于丢整个文件。"""

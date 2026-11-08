@@ -1,7 +1,4 @@
-"""组装根。全项目唯一创建具体实现的地方。
-
-换模型、存储或检索方式，只改这里。
-"""
+"""组装根，唯一创建具体实现的地方。"""
 
 from __future__ import annotations
 
@@ -19,7 +16,7 @@ from .dialogue.pipeline import DialoguePipeline
 from .dialogue.router import IntentRouter
 from .dialogue.stylist import Stylist
 from .domain.enums import Scope
-from .game import Deps, GameApp
+from .core import Deps, GameApp
 from .infra.clock import Clock, FrozenClock, SystemClock
 from .infra.config import Config
 from .infra.embedding import OllamaEmbedder
@@ -33,7 +30,6 @@ from .memory.retriever import MemoryRetriever
 from .memory.store import JsonMemoryStore, ProfileStore
 from .persona.builtin import PERSONAS
 from .relation.affection import AffectionEngine
-
 
 def build(
     cfg: Config | None = None,
@@ -105,7 +101,12 @@ def build(
     )
 
     npc_states = NpcStateStore(cfg)
-    planner = DecisionPlanner(llm, RuleEngine(affection), retriever, clock, PERSONAS)
+    # intent_mode 决定 ① 是规则打分还是模型自己选；②③ 两种模式完全一样
+    planner = DecisionPlanner(
+        llm, RuleEngine(affection), retriever, clock, PERSONAS,
+        intent_mode=getattr(cfg, "intent_mode", "rule"),
+        cfg=cfg,
+    )
 
     deps = Deps(
         cfg=cfg,
@@ -127,7 +128,6 @@ def build(
         world=world or base_world(),
     )
     return GameApp(deps, player_id=player_id)
-
 
 def build_for_tests(cfg: Config | None = None, **kwargs) -> GameApp:
     """零模型依赖的版本。所有流程测试都从这个入口进。"""

@@ -1,7 +1,4 @@
-"""基础设施：LLM 客户端，全项目唯一的模型调用入口。
-
-只依赖标准库 urllib；保留 MockLLM 用于离线流程测试。
-"""
+"""LLM 客户端，全项目唯一的模型调用入口。"""
 
 from __future__ import annotations
 
@@ -12,10 +9,8 @@ import urllib.request
 from abc import ABC, abstractmethod
 from typing import Any
 
-
 class LLMError(RuntimeError):
     pass
-
 
 class LLMClient(ABC):
     @abstractmethod
@@ -38,21 +33,16 @@ class LLMClient(ABC):
         temperature: float = 0.0,
         max_tokens: int | None = None,
     ) -> dict[str, Any]:
-        """结构化输出。解析失败抛 LLMError，由调用方决定是否降级。"""
+        """结构化输出。"""
 
     def ping(self) -> bool:
         """模型是否可达。UI 启动时用来提示，不参与业务逻辑。"""
         return True
 
-
 # ─────────────────────────── Mock ───────────────────────────
 
-
 class MockLLM(LLMClient):
-    """按 prompt 关键词匹配预置响应，用于流程测试。
-
-    scripted: {关键词: 响应}。按插入顺序匹配，命中即返回。
-    """
+    """按 prompt 关键词匹配预置响应，用于流程测试。"""
 
     def __init__(self, scripted: dict[str, Any], *, json_default: Any = None) -> None:
         self._scripted = scripted
@@ -93,12 +83,10 @@ class MockLLM(LLMClient):
         except json.JSONDecodeError as e:
             raise LLMError(f"MockLLM: 非 JSON 响应 {resp!r}") from e
 
-
 # ─────────────────────────── Ollama ───────────────────────────
 
-
 class OllamaClient(LLMClient):
-    """本地 ollama。结构化输出优先 format=schema，失败退回 format=json。"""
+    """本地 ollama。"""
 
     def __init__(
         self,
@@ -109,14 +97,13 @@ class OllamaClient(LLMClient):
         num_ctx: int = 8192,
         think: bool | None = False,
     ) -> None:
-        # 系统提示词约 4000 字符，num_ctx 低于 4096 会被截断。
+        # 8K 不是拍的：对话的 system 提示词本身就有 4000+ 字符（人设 + 记忆 +
         self.model = model
         self.host = host.rstrip("/")
         self.timeout = timeout
         self.keep_alive = keep_alive
         self.num_ctx = num_ctx
-        # 推理模型默认先输出思考段，会占满 num_predict 并截断 JSON。
-        # None 表示不传该字段，兼容老版本 ollama。
+        # qwen3 / deepseek-r1 这类推理模型默认会先输出一大段思考。
         self.think = think
 
     # ── 公共 ──
@@ -242,9 +229,7 @@ class OllamaClient(LLMClient):
             )
         return _loads_json(raw)
 
-
 # ─────────────────────────── OpenAI 兼容 ───────────────────────────
-
 
 class OpenAIClient(LLMClient):
     """OpenAI 及一切兼容 /v1/chat/completions 的服务（vLLM、DeepSeek、通义…）。"""
@@ -312,9 +297,7 @@ class OpenAIClient(LLMClient):
         )
         return _loads_json(raw)
 
-
 # ─────────────────────────── 工具 ───────────────────────────
-
 
 def _loads_json(raw: str) -> dict[str, Any]:
     """容忍模型在 JSON 外面包一层 ```json 或说明文字。"""

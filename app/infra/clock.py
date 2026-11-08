@@ -1,20 +1,17 @@
-"""基础设施：时钟。好感度衰减、冷却、检索新近度都依赖它，必须可注入。"""
+"""可注入的时钟。"""
 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 
-
 class Clock(ABC):
     @abstractmethod
     def now(self) -> datetime: ...
 
-
 class SystemClock(Clock):
     def now(self) -> datetime:
         return datetime.now()
-
 
 class FrozenClock(Clock):
     """测试与演示用：advance 手动推进，让"跨天衰减""冷却"可复现。"""

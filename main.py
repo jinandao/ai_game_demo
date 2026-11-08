@@ -1,8 +1,4 @@
-"""入口：Pygame 版。
-
-    python main.py                 # 连本地 ollama
-    python main.py --mock          # 不连模型，只验证界面与流程
-"""
+"""Pygame 入口。"""
 
 from __future__ import annotations
 
@@ -11,10 +7,7 @@ import os
 import sys
 
 # 必须在 pygame / SDL 初始化之前设置。
-# SDL2 默认不显示输入法的候选框，中文只能盲打；这个 hint 让系统 IME 的
-# 候选词窗口跟到游戏窗口里来。命令行单独设置也生效。
 os.environ.setdefault("SDL_IME_SHOW_UI", "1")
-
 
 def _env_float(name: str, fallback: float) -> float:
     try:
@@ -22,13 +15,11 @@ def _env_float(name: str, fallback: float) -> float:
     except ValueError:
         return fallback
 
-
 def _env_int(name: str, fallback: int) -> int:
     try:
         return int(os.getenv(name, fallback))
     except ValueError:
         return fallback
-
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="残响都市 · AI NPC demo")
@@ -39,7 +30,14 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--api-key", default=os.getenv("OPENAI_API_KEY", ""))
     p.add_argument("--base-url", default=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"))
     p.add_argument("--player", default="P1001")
+    p.add_argument(
+        "--intent-mode", default=os.getenv("INTENT_MODE", "rule"),
+        choices=["rule", "llm"],
+        help="意图从哪来：rule=23 个打分函数（默认）；llm=模型看处境+记忆自己选。"
+             "只换选择器，动作和翻工具不变，方便 A/B",
+    )
     p.add_argument("--mock", action="store_true", help="等价于 --provider mock")
+
     p.add_argument(
         "--think", action=argparse.BooleanOptionalAction, default=None,
         help="推理模型是否先思考。默认对 qwen3 等自动关闭（会吃掉输出预算）",
@@ -76,17 +74,14 @@ def parse_args() -> argparse.Namespace:
     )
     return p.parse_args()
 
-
 THINKING_MODELS = ("qwen3", "deepseek-r1", "reasoning")
 
-
 def _resolve_think(args: argparse.Namespace) -> bool | None:
-    """决定是否给 ollama 传 think。推理模型默认关闭，避免思考段吃掉 num_predict。"""
+    """决定要不要给 ollama 传 think 字段。"""
     if args.think is not None:
         return args.think
     name = args.model.lower()
     return False if any(k in name for k in THINKING_MODELS) else None
-
 
 def build_client(args: argparse.Namespace):
     from app.infra.llm import MockLLM, OllamaClient, OpenAIClient
@@ -112,7 +107,6 @@ def build_client(args: argparse.Namespace):
 
     return OllamaClient(model=args.model, host=args.host, think=_resolve_think(args))
 
-
 def main() -> int:
     args = parse_args()
 
@@ -137,6 +131,7 @@ def main() -> int:
         )
 
     cfg = Config(
+        intent_mode=args.intent_mode,
         embedding_model=args.embedding_model,
         sim_floor=args.sim_floor,
         compact_trigger_tokens=args.compact_tokens,
@@ -170,6 +165,10 @@ def main() -> int:
     else:
         print("[配置] 检索 关键词（向量已关闭）")
     print(
+        f"[配置] 意图 {'LLM 自选（对比实验）' if cfg.intent_mode == 'llm' else '规则打分'}"
+        + ("（模型没选出来会退回规则，日志里有 [目标/LLM] 一行）" if cfg.intent_mode == "llm" else "")
+    )
+    print(
         f"[配置] 压缩 {cfg.compact_trigger_tokens} token 触发"
         f" · 一次压 {int(cfg.compact_ratio * 100)}%"
         f" · 尾轮保留 {cfg.k_tail_turns}"
@@ -178,7 +177,6 @@ def main() -> int:
 
     AppWindow(app).run()
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

@@ -1,7 +1,4 @@
-"""动作域：阶段闸门。
-
-只检查当前阶段是否解锁；是否需要玩家同意由调用方处理。
-"""
+"""动作闸门，按好感阶段判断能否执行。"""
 
 from __future__ import annotations
 
@@ -17,7 +14,6 @@ STAGE_ORDER: list[Stage] = [
     Stage.AMBIGUOUS,
     Stage.DEPENDENT,
 ]
-
 
 class ActionGate:
     def __init__(self, tools: dict[ActionId, ActionTool], affection: AffectionEngine) -> None:

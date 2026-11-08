@@ -1,10 +1,4 @@
-"""最小 CLI 入口，不启动 Pygame。
-
-    python run.py            # 连本地 ollama
-    python run.py --mock     # 不连模型
-
-    会话内命令：/end /state /aff N /time /idle /tick N /where /events
-"""
+"""命令行入口，不启动 Pygame。"""
 
 from __future__ import annotations
 
@@ -18,7 +12,6 @@ REPLIES = {
     "stylize": "（这里是她的话）",
     "summary": "玩家提到了自己的事。",
 }
-
 
 def main() -> None:
     mock = "--mock" in sys.argv
@@ -62,7 +55,7 @@ def main() -> None:
             app.idle_tick()
             events = app.flush_decisions()
             if not events:
-                print("[决策] 队列超时，没有结果")
+                print("[决策] 没有生效的结果（队列超时，或者她手上还有没做完的动作）")
             for event in events:
                 print(f"[决策] {event.npc_id} → {event.decision.intent.value}")
             for snap in app.behavior.snapshot():
@@ -92,7 +85,6 @@ def main() -> None:
 
         turn = session.send(text)
         print(f"{app.deps.personas[npc_id].name}：{turn.text}\n")
-
 
 if __name__ == "__main__":
     main()

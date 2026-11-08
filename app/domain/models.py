@@ -1,4 +1,4 @@
-"""领域内核：纯数据类。只有字段和序列化，不放业务逻辑。"""
+"""纯数据类。"""
 
 from __future__ import annotations
 
@@ -6,11 +6,9 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Any, Literal
 
-from .enums import ActionId, DecisionIntent, Intent, Scope, Stage, Subject
-
+from .enums import ActionId, DecisionIntent, Intent, MemoryTier, Scope, Stage, Subject
 
 # ─────────────────────────── 会话 ───────────────────────────
-
 
 @dataclass(frozen=True)
 class Turn:
@@ -22,7 +20,6 @@ class Turn:
     ts: datetime
     meta: dict[str, Any] = field(default_factory=dict)  # intent / action_id / tool_trace
 
-
 @dataclass(frozen=True)
 class SessionSummary:
     """L1 压缩摘要。只服务本次会话的连贯性，永不写入 L2。"""
@@ -30,7 +27,6 @@ class SessionSummary:
     level: int                     # 0~2
     text: str
     covered: tuple[int, int]       # 已覆盖的 turn 区间 (start_idx, end_idx)
-
 
 @dataclass(frozen=True)
 class SessionContext:
@@ -43,10 +39,10 @@ class SessionContext:
     turn_count: int
     ambience: str = ""          # 当前场景的客观环境（天气、光线、气味）
     outcome: str = ""           # 她刚为玩家做完的事，写成一句话
-
+    # 世界里真实存在的场景名。聊天红线里的地名白名单按它渲染——
+    places: tuple[str, ...] = ()
 
 # ─────────────────────────── 记忆 ───────────────────────────
-
 
 @dataclass(frozen=True)
 class MemoryItem:
@@ -60,11 +56,12 @@ class MemoryItem:
     value: str
     importance: int           # 1~5
     evidence: str             # 原句片段，防瞎编
-    source: str = "dialogue"  # dialogue | action | decision | fallback
+    source: str = "dialogue"  # dialogue | action | decision | story | fallback
     promise: bool = False     # 是否为约定 / 未完成事项
     dedupe: bool = True       # 是否参与 key 去重（行为流水不参与）
     supersedes: str | None = None
-
+    # 三档：event 动作流水（有上限）/ interaction 对话里提取的（不删）/
+    tier: MemoryTier = MemoryTier.INTERACTION
 
 @dataclass(frozen=True)
 class Hit:
@@ -75,7 +72,6 @@ class Hit:
     source: str                       # "memory:m_0007" / "kb:world#3"
     meta: dict[str, Any] = field(default_factory=dict)
 
-
 @dataclass(frozen=True)
 class FactItem:
     """compose_facts 的产出单元：中性陈述 + 可追溯来源。"""
@@ -83,10 +79,9 @@ class FactItem:
     statement: str
     provenance: str
 
-
 @dataclass(frozen=True)
 class Facts:
-    """中性事实。kind 告诉 Stylist 如何使用：normal / empty / out_of_scope / action_proposal / action_denied。"""
+    """中性事实。"""
 
     items: tuple[FactItem, ...]
     confidence: float
@@ -105,14 +100,12 @@ class Facts:
             kind=kind,
         )
 
-
 @dataclass(frozen=True)
 class AffectionHint:
     """抽取产出的建议值。不能直接改好感度，必须过 AffectionEngine。"""
 
     delta: int
     reason: str
-
 
 @dataclass(frozen=True)
 class ExtractResult:
@@ -121,7 +114,6 @@ class ExtractResult:
     hints: tuple[AffectionHint, ...] = ()
     degraded: bool = False            # JSON 解析失败走了 RAW 兜底
 
-
 @dataclass(frozen=True)
 class CompactResult:
     summary: SessionSummary
@@ -129,9 +121,7 @@ class CompactResult:
     consumed_upto: int                # 被压到第几轮
     dropped_old_summary: bool         # 超过 MAX_LEVEL 丢弃最旧摘要
 
-
 # ─────────────────────────── 关系 ───────────────────────────
-
 
 @dataclass
 class AffectionState:
@@ -139,7 +129,6 @@ class AffectionState:
     stage: Stage = Stage.STRANGER
     daily_gain: int = 0
     last_gain: date | None = None
-
 
 @dataclass
 class Profile:
@@ -151,9 +140,7 @@ class Profile:
     flags: dict[str, str] = field(default_factory=dict)                 # 节点完成标记
     last_session_at: datetime | None = None
 
-
 # ─────────────────────────── 对话 ───────────────────────────
-
 
 @dataclass(frozen=True)
 class IntentResult:
@@ -164,9 +151,7 @@ class IntentResult:
     need: tuple[str, ...] = ()
     query: str = ""                  # 检索用的词，模型改写过的
 
-
 # ─────────────────────────── 决策 ───────────────────────────
-
 
 @dataclass(frozen=True)
 class Decision:
@@ -175,6 +160,20 @@ class Decision:
     urgency: float
     about_memory: str | None = None   # SHARE_MEMORY 指向哪条记忆 id
     action: str | None = None         # SERVE 指向哪个照料动作（services.py）
+    goal_text: str = ""
+    """规则算出来的目标，一句简单的话（「想给他做点热的东西吃」）。
+
+    intent 是它的枚举分类，给代码做兜底和统计；goal_text 是给人看、
+    给模型看的那句话。两者一一对应，但不相等——同一分类在不同处境下
+    说法可以不一样（「想靠近他」/「想让他知道我在意」）。
+    """
+    plan_text: tuple[str, ...] = ()
+    """模型①排出来的人话步骤（「回后厨看看 → 煮一份热的 → 端过去」）。
+
+    script 是模型②翻译出来的工具链，plan_text 是翻译前的原文。
+    留着它是为了两件事：调试时能看出"翻译丢没丢步骤"，
+    以及写进记忆时用"她做了什么"而不是"她用了哪个工具"。
+    """
     script: dict[str, Any] | None = None
     """行为脚本（NPC 自己输出的、符合约定格式的 JSON）。
 
@@ -183,16 +182,16 @@ class Decision:
     script 允许缺省——Director 会按 intent 退回 FALLBACK 模板。
     """
 
-
 @dataclass
 class NpcState:
     npc_id: str
     stamina: float = 1.0
     mood: float = 0.5
+    # 心情标签：心情不佳 / 生气 / 难过 / 开心 / 害羞 / 幸福，空 = 没触发特殊心情。
+    mood_text: str = ""
     last_decision_at: datetime | None = None
     last_decision: Decision | None = None
     cooldowns: dict[str, datetime] = field(default_factory=dict)
-
 
 @dataclass(frozen=True)
 class NpcEvent:
@@ -202,9 +201,7 @@ class NpcEvent:
     decision: Decision
     opener_facts: Facts | None = None
 
-
 # ─────────────────────────── 动作 ───────────────────────────
-
 
 @dataclass(frozen=True)
 class GateResult:
@@ -213,14 +210,12 @@ class GateResult:
     needs_consent: bool
     required_stage: Stage
 
-
 @dataclass(frozen=True)
 class ActionResult:
     ok: bool
     action_id: ActionId
     detail: str
     memory: MemoryItem | None = None   # 执行成功后要写入的记忆
-
 
 @dataclass(frozen=True)
 class ActionContext:
@@ -229,9 +224,7 @@ class ActionContext:
     session_id: str
     consent_granted: bool
 
-
 # ─────────────────────────── 人设 ───────────────────────────
-
 
 @dataclass(frozen=True)
 class PersonaConflict:
@@ -240,7 +233,6 @@ class PersonaConflict:
     name: str                 # 例："过度承诺"
     trigger: str              # 什么时候会犯
     ruling: str               # 裁决线，必须可判定
-
 
 @dataclass(frozen=True)
 class Persona:
@@ -268,13 +260,31 @@ class Persona:
     """
     few_shots_intimate: tuple[tuple[str, str], ...] = ()
 
+    bias: tuple[tuple[str, float], ...] = ()
+    """性格权重：同一份局面下，她更想干哪一类事。
+
+    键是**目标 id**（"gather" / "craft" / "serve"……），值是倍数。
+    它进的是决策第一段的打分公式：
+
+        分数 = 规则冲动(局面) × 重复惩罚 × 这张表 × 一点抖动
+
+    为什么必须放在人设里而不是目标表里：局面是共享的（背包、票据、时钟、
+    玩家都只有一份），两个人看同一份局面就该算出不同的第一名——
+    让她们不一样的只能是"她是谁"。缺省 1.0，但**新人设别留空**：
+    留空就是"没有偏好"，等于放弃这条角色区分。
+    """
+
+    def bias_of(self, goal_id: str) -> float:
+        """取某个目标的性格倍数。查不到就是 1.0（中性）。"""
+        for key, value in self.bias:
+            if key == goal_id:
+                return float(value)
+        return 1.0
+
     def has_banned(self, text: str) -> list[str]:
         return [w for w in self.banned if w and w in text]
 
-
 # ─────────────────────────── 会话收尾 ───────────────────────────
-
-
 
 @dataclass(frozen=True)
 class EndReport:

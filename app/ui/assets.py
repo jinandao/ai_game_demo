@@ -1,7 +1,4 @@
-"""UI：可选美术资源，缺失时由渲染层用几何占位。
-
-命名约定：assets/bg_{scene}.png、prop_{id}.png、spr_{npc}.png、portrait_{npc}_{emotion}.png。
-"""
+"""可选美术资源，缺失时用几何占位。"""
 
 from __future__ import annotations
 
@@ -15,9 +12,8 @@ DEFAULT_FRAME_W = 48
 DEFAULT_FRAME_H = 72
 WALK_FPS = 8.0
 
-
 class SpriteSheet:
-    """精灵表：行是朝向，列是帧，第 0 列站立，其余行走帧。"""
+    """精灵表：行 = 朝向，列 = 帧。"""
 
     def __init__(
         self,
@@ -51,7 +47,6 @@ class SpriteSheet:
             return self.image.subsurface(
                 pygame.Rect(0, 0, self.frame_w, self.frame_h)
             )
-
 
 class Assets:
     def __init__(self, root: Path | str = ".") -> None:

@@ -1,10 +1,9 @@
-"""对话域：内容层，把检索命中写成中性要点。"""
+"""内容层，把检索命中写成中性要点。"""
 
 from __future__ import annotations
 
 from ..domain.enums import Intent
 from ..domain.models import FactItem, Facts, Hit
-
 
 class Composer:
     def __init__(self, max_items: int = 3) -> None:
@@ -25,7 +24,6 @@ class Composer:
 
     def compose_empty(self, reason: str) -> Facts:
         return Facts.empty(confidence=0.0)
-
 
 def _normalize(hit: Hit) -> str:
     """去掉来源前缀、压掉换行。命中文本本身已经是中性陈述。"""

@@ -1,4 +1,4 @@
-"""知识域：关键词检索实现。demo 阶段的默认选择。"""
+"""关键词检索实现。"""
 
 from __future__ import annotations
 
@@ -9,7 +9,6 @@ from ..domain.models import Hit
 from .base import Chunk, KnowledgeBase, is_visible
 
 _TOKEN = re.compile(r"[\u4e00-\u9fff]{2,}|[a-zA-Z0-9]+")
-
 
 class KeywordKB(KnowledgeBase):
     def __init__(self, chunks: list[Chunk]) -> None:

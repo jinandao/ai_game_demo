@@ -1,7 +1,4 @@
-"""知识域：从 markdown 加载资料库，按 ## 切块。
-
-文件名含 _private 的块仅本人可检索；*_vocab.md 不进库，只拼进提示词。
-"""
+"""从 markdown 加载资料库，按 ## 切块。"""
 
 from __future__ import annotations
 
@@ -16,7 +13,6 @@ _NPC = re.compile(r"^npc_(?P<npc>[A-Za-z0-9]+)_(?P<idx>\d+)_(?P<slug>[a-z_]+)\.m
 # 这些文件只是人看的参考资料，不进检索库
 _SKIP_SLUGS = {"vocab"}
 
-
 def load_kb(directory: Path) -> list[Chunk]:
     """目录不存在时返回空列表，不抛异常——demo 不应该因为缺 kb 起不来。"""
     if not directory.exists():
@@ -30,7 +26,6 @@ def load_kb(directory: Path) -> list[Chunk]:
             continue
         chunks.extend(_split(path, rel, scope, owner, visibility))
     return chunks
-
 
 def _classify(rel: Path) -> tuple[Scope | None, str | None, str]:
     name = rel.name
@@ -49,7 +44,6 @@ def _classify(rel: Path) -> tuple[Scope | None, str | None, str]:
         return Scope.WORLD, None, "public"
 
     return None, None, "public"
-
 
 def _split(
     path: Path,
@@ -83,7 +77,6 @@ def _split(
             )
         )
     return out
-
 
 def _tags(title: str, body: str) -> tuple[str, ...]:
     """把标题里出现的实词当标签，提升关键词检索的命中率。"""

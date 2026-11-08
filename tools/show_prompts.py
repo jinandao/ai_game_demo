@@ -1,4 +1,4 @@
-"""把提示词用真实数据渲染到 PROMPTS_PREVIEW.md，不连模型。"""
+"""用真实数据渲染提示词，输出 PROMPTS_PREVIEW.md。"""
 
 from __future__ import annotations
 
@@ -67,10 +67,8 @@ TRANSCRIPT = """玩家：那些楼你闭着眼都能走，是真的？
 ALLOWED_A = ["idle", "rest", "seek_player", "share_memory", "solo", "withdraw", "work"]
 ALLOWED_B = ["work", "solo", "share_memory", "seek_player"]
 
-
 def hints(names: list[str]) -> list[str]:
     return [f"{n} —— {INTENT_HINT.get(n, '')}" for n in names]
-
 
 BATCH_ROW_B = {
     "npc_id": "B",
@@ -103,10 +101,8 @@ DECISION_PAYLOAD = {
     "最近做过的事": ["solo", "rest"],
 }
 
-
 def block(title: str, lang: str, text: str) -> str:
     return f"### {title}\n\n```{lang}\n{text}\n```\n"
-
 
 def main() -> None:
     chat_system = build_chat_system(
@@ -121,6 +117,11 @@ def main() -> None:
 
     parts: list[str] = []
     parts.append("# 三类提示词实录\n")
+    parts.append(
+        "> ⚠️ **这份只保留旧版三类（决策 / 聊天 / 压缩），已被 `PROMPTS_ALL.md` 取代。**\n"
+        "> 现在实际在跑的是六类（意图 / 规划 / 工具链 / 压缩 / 路由 / 回答），\n"
+        "> 核对提示词请看 `PROMPTS_ALL.md`。这里留着只为对照历史写法。\n"
+    )
     parts.append(
         "由 `tools/show_prompts.py` 用游戏内的真实人设/场景/记忆渲染，"
         "不连模型。改了模板重跑即可核对。\n"
@@ -210,7 +211,6 @@ def main() -> None:
     out = ROOT / "PROMPTS_PREVIEW.md"
     out.write_text("\n".join(parts), encoding="utf-8")
     print(f"written: {out}")
-
 
 if __name__ == "__main__":
     main()

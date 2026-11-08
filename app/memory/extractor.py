@@ -1,4 +1,4 @@
-"""记忆域：抽取器，压缩与会话结束时共用。"""
+"""从对话里抽取摘要与结构化事实。"""
 
 from __future__ import annotations
 
@@ -71,9 +71,7 @@ class Extractor:
             raw = self._llm.complete_json(
                 self._build_messages(turns, last_summary, mode),
                 schema=SCHEMA,
-                # 摘要 300 字 + 若干条事实。上限放宽到 900：
-                # 事实多的时候 700 会把数组截断，截断的 JSON 整条报废，
-                # 结果比"少抽几条"更糟。
+                # 摘要 300 字 + 若干条事实。上限放宽到 900
                 max_tokens=900,
             )
         except LLMError:
@@ -157,7 +155,6 @@ class Extractor:
             ),
             degraded=True,
         )
-
 
 def render_turns(turns: list[Turn], npc_name: str = "她") -> str:
     lines = []
